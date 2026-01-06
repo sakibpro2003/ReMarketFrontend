@@ -1,10 +1,9 @@
-﻿import React, { useState } from "react";
+﻿import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import UserSidebar from "../components/UserSidebar";
 
 const emptyAttribute = { key: "", value: "" };
-const emptyImage = { url: "" };
 const categories = [
   "Electronics",
   "Furniture",
@@ -20,6 +19,7 @@ const categories = [
 
 const CreateListing = () => {
   const navigate = useNavigate();
+  const previewUrlsRef = useRef([]);
   const [form, setForm] = useState({
     title: "",
     category: "",
@@ -32,8 +32,15 @@ const CreateListing = () => {
     tags: ""
   });
   const [attributes, setAttributes] = useState([emptyAttribute]);
-  const [images, setImages] = useState([emptyImage]);
-  const [loading, setLoading] = useState(false);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      previewUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      previewUrlsRef.current = [];
+    };
+  }, []);
 
   const handleFormChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -59,23 +66,69 @@ const CreateListing = () => {
     );
   };
 
-  const updateImage = (index, value) => {
-    setImages((prev) =>
-      prev.map((item, idx) => (idx === index ? { url: value } : item))
-    );
-  };
+  const handleImageSelection = (event) => {
+    const files = Array.from(event.target.files || []);
+    if (!files.length) {
+      return;
+    }
 
-  const addImage = () => {
-    setImages((prev) => [...prev, emptyImage]);
+    const items = files.map((file) => {
+      const preview = URL.createObjectURL(file);
+      previewUrlsRef.current.push(preview);
+      return { file, preview };
+    });
+
+    setSelectedImages((prev) => [...prev, ...items]);
+    event.target.value = "";
   };
 
   const removeImage = (index) => {
-    setImages((prev) =>
-      prev.length === 1 ? prev : prev.filter((_, idx) => idx !== index)
-    );
+    setSelectedImages((prev) => {
+      const item = prev[index];
+      if (item?.preview) {
+        URL.revokeObjectURL(item.preview);
+        previewUrlsRef.current = previewUrlsRef.current.filter(
+          (url) => url !== item.preview
+        );
+      }
+      return prev.filter((_, idx) => idx !== index);
+    });
   };
 
-  const buildPayload = (statusValue) => {
+  const uploadImage = async (file) => {
+    const token = localStorage.getItem("remarket_token");
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch(
+      `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}/api/uploads/image`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        body: formData
+      }
+    );
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data?.error || "Failed to upload image");
+    }
+
+    return data;
+  };
+
+  const uploadSelectedImages = async () => {
+    const uploads = [];
+    for (const item of selectedImages) {
+      const uploaded = await uploadImage(item.file);
+      uploads.push(uploaded);
+    }
+    return uploads;
+  };
+
+  const buildPayload = (statusValue, uploadedImages) => {
     const tags = form.tags
       .split(",")
       .map((tag) => tag.trim())
@@ -88,8 +141,8 @@ const CreateListing = () => {
       }))
       .filter((attr) => attr.key && attr.value);
 
-    const imagesPayload = images
-      .map((img) => ({ url: img.url.trim() }))
+    const imagesPayload = (uploadedImages || [])
+      .map((img) => ({ url: img.url }))
       .filter((img) => img.url);
 
     return {
@@ -109,8 +162,13 @@ const CreateListing = () => {
   };
 
   const submitListing = async (statusValue) => {
-    setLoading(true);
+    setSubmitting(true);
     try {
+      let uploadedImages = [];
+      if (statusValue === "pending" && selectedImages.length) {
+        uploadedImages = await uploadSelectedImages();
+      }
+
       const token = localStorage.getItem("remarket_token");
       const response = await fetch(
         `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}/api/products`,
@@ -120,7 +178,7 @@ const CreateListing = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`
           },
-          body: JSON.stringify(buildPayload(statusValue))
+          body: JSON.stringify(buildPayload(statusValue, uploadedImages))
         }
       );
 
@@ -139,7 +197,7 @@ const CreateListing = () => {
     } catch (error) {
       toast.error(error.message || "Failed to save listing.");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -311,30 +369,40 @@ const CreateListing = () => {
               <div className="form-section">
                 <h2 className="section-title">Images</h2>
                 <p className="helper-text">
-                  Add multiple image URLs for now. Uploads will be connected later.
+                  Select images now. They will upload when you submit for approval.
                 </p>
-                <div className="stack">
-                  {images.map((image, index) => (
-                    <div className="attribute-row attribute-row-two" key={`image-${index}`}>
-                      <input
-                        type="url"
-                        value={image.url}
-                        onChange={(event) => updateImage(index, event.target.value)}
-                        placeholder="https://example.com/image.jpg"
-                      />
-                      <button
-                        className="ghost-btn"
-                        type="button"
-                        onClick={() => removeImage(index)}
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
+                <div className="upload-box">
+                  <input
+                    id="images"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageSelection}
+                    disabled={submitting}
+                  />
+                  <label htmlFor="images" className="upload-label">
+                    {submitting ? "Uploading..." : "Choose images"}
+                  </label>
+                  <span className="helper-text">
+                    {selectedImages.length} selected
+                  </span>
                 </div>
-                <button className="secondary-btn button-link" type="button" onClick={addImage}>
-                  Add another image
-                </button>
+                {selectedImages.length ? (
+                  <div className="image-preview-grid">
+                    {selectedImages.map((img, index) => (
+                      <div key={img.preview} className="image-preview">
+                        <img src={img.preview} alt={`Listing ${index + 1}`} />
+                        <button
+                          className="ghost-btn"
+                          type="button"
+                          onClick={() => removeImage(index)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </div>
 
               <div className="form-section">
@@ -386,12 +454,16 @@ const CreateListing = () => {
                   className="secondary-btn"
                   type="button"
                   onClick={() => submitListing("draft")}
-                  disabled={loading}
+                  disabled={submitting}
                 >
                   Save draft
                 </button>
-                <button className="primary-btn" type="submit" disabled={loading}>
-                  {loading ? "Submitting..." : "Submit for approval"}
+                <button
+                  className="primary-btn"
+                  type="submit"
+                  disabled={submitting}
+                >
+                  {submitting ? "Submitting..." : "Submit for approval"}
                 </button>
               </div>
             </form>

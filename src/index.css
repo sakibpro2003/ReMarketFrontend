@@ -7,13 +7,18 @@
 @layer base {
   :root {
     color-scheme: light;
-    --bg: #f7f3e9;
-    --bg-accent: #f0e4d0;
+    --bg: #ffffff;
+    --bg-accent: #f7f9fc;
     --card: #ffffff;
     --ink: #1a1a1a;
     --muted: #6b6b6b;
     --accent: #1e7b74;
     --accent-strong: #14635e;
+    --sunset: #ffb347;
+    --coral: #ff7a59;
+    --sky: #4cc9f0;
+    --lime: #8fd14f;
+    --leaf: #2cc1b2;
     --highlight: #f0a202;
     --danger: #c84b31;
     --shadow: 0 20px 45px rgba(30, 30, 30, 0.12);
@@ -30,11 +35,7 @@
     margin: 0;
     font-family: "Space Grotesk", "Segoe UI", sans-serif;
     color: var(--ink);
-    background:
-      radial-gradient(circle at 10% 10%, rgba(240, 162, 2, 0.18), transparent 45%),
-      radial-gradient(circle at 85% 15%, rgba(30, 123, 116, 0.2), transparent 45%),
-      linear-gradient(180deg, rgba(255, 255, 255, 0.7), transparent 45%),
-      var(--bg);
+    background: var(--bg);
     min-height: 100vh;
   }
 
@@ -117,7 +118,8 @@
     background: #ffffff;
     padding: 16px 22px;
     border-radius: 18px;
-    box-shadow: 0 15px 30px rgba(30, 30, 30, 0.08);
+    box-shadow: 0 20px 40px rgba(30, 30, 30, 0.08);
+    border: 1px solid rgba(30, 30, 30, 0.05);
   }
 
   .nav-left {
@@ -141,7 +143,7 @@
 
   .nav-link-active {
     color: #ffffff;
-    background: var(--accent);
+    background: linear-gradient(135deg, var(--accent), var(--leaf));
   }
 
   .nav-right {
@@ -178,11 +180,20 @@
     background: #ffffff;
     border-radius: 20px;
     padding: 20px;
-    box-shadow: var(--shadow);
+    box-shadow: 0 20px 40px rgba(30, 30, 30, 0.08);
+    border: 1px solid rgba(30, 30, 30, 0.05);
     display: grid;
     gap: 18px;
     position: sticky;
     top: 20px;
+  }
+
+  .sidebar::before {
+    content: "";
+    height: 4px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--sunset), var(--sky), var(--lime));
+    display: block;
   }
 
   .sidebar-brand {
@@ -195,7 +206,7 @@
   }
 
   .sidebar-user {
-    background: rgba(30, 123, 116, 0.12);
+    background: linear-gradient(135deg, rgba(30, 123, 116, 0.12), rgba(76, 201, 240, 0.12));
     border-radius: 14px;
     padding: 12px;
     display: grid;
@@ -227,7 +238,7 @@
   }
 
   .sidebar-link-active {
-    background: rgba(30, 123, 116, 0.15);
+    background: linear-gradient(135deg, rgba(30, 123, 116, 0.18), rgba(76, 201, 240, 0.2));
     color: var(--accent-strong);
     font-weight: 600;
   }
@@ -236,7 +247,8 @@
     background: #ffffff;
     border-radius: 20px;
     padding: 28px;
-    box-shadow: var(--shadow);
+    box-shadow: 0 20px 45px rgba(30, 30, 30, 0.08);
+    border: 1px solid rgba(30, 30, 30, 0.05);
     display: grid;
     gap: 24px;
     width: 100%;
@@ -249,6 +261,121 @@
     gap: 16px;
   }
 
+  .public-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 22px;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 20px 40px rgba(30, 30, 30, 0.08);
+    border: 1px solid rgba(30, 30, 30, 0.05);
+  }
+
+  .public-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .products-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+
+  .products-sidebar {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 20px;
+    display: grid;
+    gap: 16px;
+    box-shadow: 0 20px 40px rgba(30, 30, 30, 0.08);
+    border: 1px solid rgba(30, 30, 30, 0.05);
+  }
+
+  .filter-header h2 {
+    margin: 0;
+    font-size: 20px;
+  }
+
+  .filter-group {
+    display: grid;
+    gap: 8px;
+  }
+
+  .filter-row-inline {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .products-content {
+    display: grid;
+    gap: 20px;
+  }
+
+  .products-header h1 {
+    margin: 0;
+  }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+  }
+
+  .product-card {
+    background: #ffffff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 16px 28px rgba(30, 30, 30, 0.08);
+    border: 1px solid rgba(30, 30, 30, 0.04);
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+
+  .product-image {
+    width: 100%;
+    height: 170px;
+    object-fit: cover;
+    display: block;
+  }
+
+  .product-image-placeholder {
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, rgba(255, 179, 71, 0.2), rgba(76, 201, 240, 0.2));
+    color: var(--accent-strong);
+    font-weight: 700;
+    font-size: 28px;
+  }
+
+  .product-info {
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+  }
+
+  .product-info h3 {
+    margin: 0;
+    font-size: 16px;
+  }
+
+  .product-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .product-price {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
   .filter-row {
     display: flex;
     flex-wrap: wrap;
@@ -259,14 +386,14 @@
   .filter-btn {
     padding: 8px 14px;
     border-radius: 999px;
-    background: rgba(30, 123, 116, 0.1);
+    background: rgba(30, 123, 116, 0.12);
     color: var(--accent-strong);
     border: none;
     font-size: 13px;
   }
 
   .filter-btn-active {
-    background: var(--accent);
+    background: linear-gradient(135deg, var(--accent), var(--leaf));
     color: #ffffff;
   }
 
@@ -277,11 +404,32 @@
   }
 
   .detail-card {
-    background: rgba(249, 247, 242, 0.9);
+    background: #ffffff;
     border-radius: 18px;
     padding: 18px;
     display: grid;
     gap: 12px;
+    border: 1px solid rgba(30, 30, 30, 0.04);
+  }
+
+  .detail-grid .detail-card:nth-child(1) {
+    border-left: 4px solid var(--sunset);
+  }
+
+  .detail-grid .detail-card:nth-child(2) {
+    border-left: 4px solid var(--sky);
+  }
+
+  .detail-grid .detail-card:nth-child(3) {
+    border-left: 4px solid var(--lime);
+  }
+
+  .detail-grid .detail-card:nth-child(4) {
+    border-left: 4px solid var(--accent);
+  }
+
+  .detail-grid .detail-card:nth-child(5) {
+    border-left: 4px solid var(--coral);
   }
 
   .detail-span {
@@ -342,6 +490,53 @@
     display: block;
   }
 
+  .upload-box {
+    border: 1px dashed rgba(30, 30, 30, 0.15);
+    border-radius: 16px;
+    padding: 16px;
+    background: rgba(76, 201, 240, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .upload-box input {
+    display: none;
+  }
+
+  .upload-label {
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--accent), var(--leaf));
+    color: #ffffff;
+    font-size: 14px;
+    cursor: pointer;
+  }
+
+  .image-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 12px;
+  }
+
+  .image-preview {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 10px;
+    display: grid;
+    gap: 10px;
+    box-shadow: 0 10px 20px rgba(30, 30, 30, 0.08);
+    border: 1px solid rgba(30, 30, 30, 0.05);
+    justify-items: center;
+  }
+
+  .image-preview img {
+    width: 90px;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+
   .action-row {
     display: flex;
     justify-content: flex-end;
@@ -349,7 +544,7 @@
   }
 
   .notif-card {
-    background: rgba(30, 123, 116, 0.12);
+    background: linear-gradient(135deg, rgba(30, 123, 116, 0.16), rgba(255, 179, 71, 0.18));
     border-radius: 16px;
     padding: 12px 16px;
     display: grid;
@@ -383,7 +578,7 @@
   }
 
   .list-card {
-    background: rgba(249, 247, 242, 0.9);
+    background: rgba(249, 251, 255, 0.9);
     border-radius: 18px;
     padding: 18px;
     display: grid;
@@ -392,7 +587,8 @@
 
   .list-card-strong {
     background: #ffffff;
-    box-shadow: 0 12px 24px rgba(30, 30, 30, 0.08);
+    box-shadow: 0 14px 28px rgba(30, 30, 30, 0.08);
+    border: 1px solid rgba(30, 30, 30, 0.04);
   }
 
   .list-card-header {
@@ -559,18 +755,18 @@
   }
 
   .primary-btn {
-    background: var(--accent);
+    background: linear-gradient(135deg, var(--accent), var(--leaf));
     color: white;
-    box-shadow: 0 10px 20px rgba(30, 123, 116, 0.3);
+    box-shadow: 0 12px 24px rgba(30, 123, 116, 0.3);
   }
 
   .primary-btn:hover {
     transform: translateY(-1px);
-    box-shadow: 0 12px 24px rgba(30, 123, 116, 0.35);
+    box-shadow: 0 16px 28px rgba(30, 123, 116, 0.35);
   }
 
   .secondary-btn {
-    background: rgba(30, 123, 116, 0.1);
+    background: rgba(30, 123, 116, 0.12);
     color: var(--accent-strong);
   }
 
@@ -695,8 +891,21 @@
     border-radius: 20px;
     padding: 20px;
     box-shadow: 0 15px 30px rgba(30, 30, 30, 0.08);
+    border: 1px solid rgba(30, 30, 30, 0.04);
     display: grid;
     gap: 6px;
+  }
+
+  .stat-grid .stat-card:nth-child(1) {
+    background: linear-gradient(135deg, rgba(255, 179, 71, 0.18), #ffffff 60%);
+  }
+
+  .stat-grid .stat-card:nth-child(2) {
+    background: linear-gradient(135deg, rgba(76, 201, 240, 0.2), #ffffff 60%);
+  }
+
+  .stat-grid .stat-card:nth-child(3) {
+    background: linear-gradient(135deg, rgba(143, 209, 79, 0.18), #ffffff 60%);
   }
 
   .stat-label {
@@ -725,6 +934,19 @@
     display: grid;
     gap: 12px;
     box-shadow: 0 15px 30px rgba(30, 30, 30, 0.08);
+    border: 1px solid rgba(30, 30, 30, 0.04);
+  }
+
+  .panel-grid .panel-card:nth-child(1) {
+    background: linear-gradient(135deg, rgba(30, 123, 116, 0.14), #ffffff 60%);
+  }
+
+  .panel-grid .panel-card:nth-child(2) {
+    background: linear-gradient(135deg, rgba(255, 122, 89, 0.14), #ffffff 60%);
+  }
+
+  .panel-grid .panel-card:nth-child(3) {
+    background: linear-gradient(135deg, rgba(76, 201, 240, 0.14), #ffffff 60%);
   }
 
   .panel-card h3 {
@@ -734,8 +956,8 @@
   .badge {
     @apply inline-flex items-center gap-1.5 text-xs px-3 py-1;
     border-radius: 999px;
-    background: rgba(240, 162, 2, 0.15);
-    color: #7a5200;
+    background: linear-gradient(135deg, rgba(255, 179, 71, 0.25), rgba(76, 201, 240, 0.2));
+    color: #5a3b00;
   }
 
   @media (max-width: 900px) {
@@ -763,6 +985,10 @@
     }
 
     .dashboard-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .products-layout {
       grid-template-columns: 1fr;
     }
 

@@ -9,6 +9,7 @@ import CreateListing from "./pages/CreateListing";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import MyListings from "./pages/MyListings";
+import Products from "./pages/Products";
 import Register from "./pages/Register";
 import UserDashboard from "./pages/UserDashboard";
 
@@ -30,11 +31,11 @@ const App = () => {
   return (
     <>
       <Routes>
-        <Route
-          path="/"
-          element={
-            !user ? (
-              <Navigate to="/login" replace />
+      <Route
+        path="/"
+        element={
+          !user ? (
+            <Navigate to="/login" replace />
             ) : isAdmin ? (
               <Navigate to="/admin" replace />
             ) : (
@@ -114,6 +115,7 @@ const App = () => {
           )
         }
       />
+      <Route path="/products" element={<Products />} />
       <Route
         path="/admin/listings/:id"
         element={
