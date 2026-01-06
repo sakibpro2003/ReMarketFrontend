@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
@@ -42,6 +42,7 @@ const conditionLabels = {
 
 const Products = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [category, setCategory] = useState("all");
@@ -51,6 +52,7 @@ const Products = () => {
   const [sort, setSort] = useState("newest");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [wishlistIds, setWishlistIds] = useState(new Set());
 
   const apiBase = useMemo(
     () => import.meta.env.VITE_API_BASE_URL || "http://localhost:5000",
@@ -109,6 +111,48 @@ const Products = () => {
     fetchProducts();
   }, [apiBase, category, condition, debouncedSearch, maxPrice, minPrice, sort]);
 
+  useEffect(() => {
+    if (!user) {
+      setWishlistIds(new Set());
+      return;
+    }
+
+    let isActive = true;
+
+    const fetchWishlist = async () => {
+      try {
+        const token = localStorage.getItem("remarket_token");
+        const response = await fetch(`${apiBase}/api/wishlist`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data?.error || "Failed to load wishlist");
+        }
+
+        if (isActive) {
+          const ids = (data.items || [])
+            .map((item) => item.product?._id)
+            .filter(Boolean);
+          setWishlistIds(new Set(ids));
+        }
+      } catch (error) {
+        toast.error(error.message || "Failed to load wishlist", {
+          toastId: "wishlist-load"
+        });
+      }
+    };
+
+    fetchWishlist();
+
+    return () => {
+      isActive = false;
+    };
+  }, [apiBase, user]);
+
   const formatPrice = (value) =>
     new Intl.NumberFormat("en-BD").format(value || 0);
 
@@ -119,6 +163,52 @@ const Products = () => {
     setMinPrice("");
     setMaxPrice("");
     setSort("newest");
+  };
+
+  const toggleWishlist = async (productId) => {
+    if (!user) {
+      toast.info("Sign in to save items", { toastId: "wishlist-login" });
+      navigate("/login");
+      return;
+    }
+
+    const token = localStorage.getItem("remarket_token");
+    if (!token) {
+      toast.error("Session expired. Please sign in again.", {
+        toastId: "wishlist-auth"
+      });
+      navigate("/login");
+      return;
+    }
+
+    const isWishlisted = wishlistIds.has(productId);
+
+    try {
+      const response = await fetch(`${apiBase}/api/wishlist/${productId}`, {
+        method: isWishlisted ? "DELETE" : "POST",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "Failed to update wishlist");
+      }
+
+      setWishlistIds((prev) => {
+        const next = new Set(prev);
+        if (isWishlisted) {
+          next.delete(productId);
+        } else {
+          next.add(productId);
+        }
+        return next;
+      });
+    } catch (error) {
+      toast.error(error.message || "Failed to update wishlist", {
+        toastId: "wishlist-update"
+      });
+    }
   };
 
   return (
@@ -250,6 +340,29 @@ const Products = () => {
               <div className="products-grid">
                 {products.map((product) => (
                   <div key={product._id} className="product-card">
+                    <button
+                      type="button"
+                      className={
+                        wishlistIds.has(product._id)
+                          ? "wishlist-button wishlist-button-active"
+                          : "wishlist-button"
+                      }
+                      onClick={() => toggleWishlist(product._id)}
+                      aria-label={
+                        wishlistIds.has(product._id)
+                          ? "Remove from wishlist"
+                          : "Add to wishlist"
+                      }
+                    >
+                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path
+                          d="M12 20.5s-7-4.4-9.3-8.2C.9 9.6 2.2 6 5.7 5.2c2-.4 3.7.5 4.8 2 1.1-1.5 2.8-2.4 4.8-2 3.5.8 4.8 4.4 3 7.1C19 16.1 12 20.5 12 20.5z"
+                          fill="currentColor"
+                          stroke="currentColor"
+                          strokeWidth="1.2"
+                        />
+                      </svg>
+                    </button>
                     {product.images?.[0]?.url ? (
                       <img
                         src={product.images[0].url}
@@ -275,6 +388,12 @@ const Products = () => {
                         </span>
                         <span className="helper-text">{product.location}</span>
                       </div>
+                      <Link
+                        className="secondary-btn button-link"
+                        to={`/products/${product._id}`}
+                      >
+                        View product
+                      </Link>
                     </div>
                   </div>
                 ))}

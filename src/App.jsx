@@ -9,9 +9,11 @@ import CreateListing from "./pages/CreateListing";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import MyListings from "./pages/MyListings";
+import ProductDetails from "./pages/ProductDetails";
 import Products from "./pages/Products";
 import Register from "./pages/Register";
 import UserDashboard from "./pages/UserDashboard";
+import Wishlist from "./pages/Wishlist";
 
 const App = () => {
   const { user, loading } = useAuth();
@@ -103,7 +105,7 @@ const App = () => {
             )
           }
         />
-      <Route
+        <Route
         path="/admin/listings"
         element={
           !user ? (
@@ -115,7 +117,14 @@ const App = () => {
           )
         }
       />
-      <Route path="/products" element={<Products />} />
+        <Route path="/products" element={<Products />} />
+        <Route path="/products/:id" element={<ProductDetails />} />
+        <Route
+          path="/wishlist"
+          element={
+            !user ? <Navigate to="/login" replace /> : <Wishlist />
+          }
+        />
       <Route
         path="/admin/listings/:id"
         element={
