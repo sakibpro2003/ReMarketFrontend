@@ -1,11 +1,25 @@
 ﻿import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import UserSidebar from "../components/UserSidebar";
 
 const emptyAttribute = { key: "", value: "" };
 const emptyImage = { url: "" };
+const categories = [
+  "Electronics",
+  "Furniture",
+  "Fashion",
+  "Home Appliances",
+  "Books",
+  "Sports",
+  "Vehicles",
+  "Toys",
+  "Beauty",
+  "Other"
+];
 
 const CreateListing = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     title: "",
     category: "",
@@ -19,7 +33,7 @@ const CreateListing = () => {
   });
   const [attributes, setAttributes] = useState([emptyAttribute]);
   const [images, setImages] = useState([emptyImage]);
-  const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleFormChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -61,9 +75,77 @@ const CreateListing = () => {
     );
   };
 
+  const buildPayload = (statusValue) => {
+    const tags = form.tags
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+
+    const attributesPayload = attributes
+      .map((attr) => ({
+        key: attr.key.trim(),
+        value: attr.value.trim()
+      }))
+      .filter((attr) => attr.key && attr.value);
+
+    const imagesPayload = images
+      .map((img) => ({ url: img.url.trim() }))
+      .filter((img) => img.url);
+
+    return {
+      title: form.title.trim(),
+      category: form.category,
+      condition: form.condition,
+      price: Number(form.price || 0),
+      negotiable: form.negotiable,
+      quantity: Number(form.quantity || 1),
+      location: form.location.trim(),
+      description: form.description.trim(),
+      tags,
+      attributes: attributesPayload,
+      images: imagesPayload,
+      status: statusValue
+    };
+  };
+
+  const submitListing = async (statusValue) => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("remarket_token");
+      const response = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}/api/products`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(buildPayload(statusValue))
+        }
+      );
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "Request failed");
+      }
+
+      if (statusValue === "draft") {
+        toast.success("Draft saved. You can submit it for approval anytime.");
+      } else {
+        navigate("/dashboard/listings", {
+          state: { toast: "Listing submitted for approval. Admins notified." }
+        });
+      }
+    } catch (error) {
+      toast.error(error.message || "Failed to save listing.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    setStatus("Listing ready to submit once the backend endpoint is wired.");
+    submitListing("pending");
   };
 
   return (
@@ -86,8 +168,6 @@ const CreateListing = () => {
               </Link>
             </div>
 
-            {status ? <div className="info">{status}</div> : null}
-
             <form className="form-grid" onSubmit={handleSubmit}>
               <div className="form-section">
                 <h2 className="section-title">Core details</h2>
@@ -106,15 +186,22 @@ const CreateListing = () => {
                   </div>
                   <div>
                     <label htmlFor="category">Category</label>
-                    <input
+                    <select
                       id="category"
                       name="category"
-                      type="text"
                       value={form.category}
                       onChange={handleFormChange}
-                      placeholder="e.g. Electronics, Furniture, Books"
                       required
-                    />
+                    >
+                      <option value="" disabled>
+                        Select category
+                      </option>
+                      {categories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
                 <div className="form-row">
@@ -295,11 +382,16 @@ const CreateListing = () => {
               </div>
 
               <div className="form-actions">
-                <button className="secondary-btn" type="button">
+                <button
+                  className="secondary-btn"
+                  type="button"
+                  onClick={() => submitListing("draft")}
+                  disabled={loading}
+                >
                   Save draft
                 </button>
-                <button className="primary-btn" type="submit">
-                  Submit for approval
+                <button className="primary-btn" type="submit" disabled={loading}>
+                  {loading ? "Submitting..." : "Submit for approval"}
                 </button>
               </div>
             </form>

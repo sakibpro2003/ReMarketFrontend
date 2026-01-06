@@ -1,9 +1,37 @@
-﻿import React from "react";
+﻿import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import AdminSidebar from "../components/AdminSidebar";
 
 const AdminDashboard = () => {
   const { pathname } = useLocation();
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const loadNotifications = async () => {
+      try {
+        const token = localStorage.getItem("remarket_token");
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}/api/admin/notifications`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = await response.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+      } catch (error) {
+        console.error("Failed to load notifications", error);
+      }
+    };
+
+    loadNotifications();
+  }, []);
+
   const isListings = pathname.startsWith("/admin/listings");
   const isCommission = pathname.startsWith("/admin/commission");
   const isUsers = pathname.startsWith("/admin/users");
@@ -46,6 +74,12 @@ const AdminDashboard = () => {
                 <h1>{header.title}</h1>
                 <p className="helper-text">{header.subtitle}</p>
               </div>
+              {isOverview ? (
+                <div className="notif-card">
+                  <span className="notif-count">{unreadCount}</span>
+                  <span className="helper-text">New submissions</span>
+                </div>
+              ) : null}
             </div>
 
             {isOverview ? (
@@ -88,11 +122,24 @@ const AdminDashboard = () => {
                     </button>
                   </div>
                   <div className="panel-card">
-                    <h3>User management</h3>
-                    <p className="helper-text">Promote users to admin or suspend accounts.</p>
-                    <button className="secondary-btn" type="button">
-                      Manage users
-                    </button>
+                    <h3>Notifications</h3>
+                    <p className="helper-text">
+                      Recent listing submissions from sellers.
+                    </p>
+                    <div className="notif-list">
+                      {notifications.length ? (
+                        notifications.map((item) => (
+                          <div key={item.id} className="notif-item">
+                            <div>
+                              <strong>{item.message}</strong>
+                              <span className="helper-text">{item.sellerName}</span>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <span className="helper-text">No new submissions yet.</span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </>

@@ -1,10 +1,14 @@
 ﻿import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 import { useAuth } from "./auth/AuthContext";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminListingDetails from "./pages/AdminListingDetails";
+import AdminListings from "./pages/AdminListings";
 import CreateListing from "./pages/CreateListing";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import MyListings from "./pages/MyListings";
 import Register from "./pages/Register";
 import UserDashboard from "./pages/UserDashboard";
 
@@ -24,146 +28,161 @@ const App = () => {
   }
 
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          !user ? (
-            <Navigate to="/login" replace />
-          ) : isAdmin ? (
-            <Navigate to="/admin" replace />
-          ) : (
-            <Home />
-          )
-        }
-      />
-      <Route
-        path="/dashboard"
-        element={
-          !user ? (
-            <Navigate to="/login" replace />
-          ) : isAdmin ? (
-            <Navigate to="/admin" replace />
-          ) : (
-            <UserDashboard />
-          )
-        }
-      />
-      <Route
-        path="/dashboard/new"
-        element={
-          !user ? (
-            <Navigate to="/login" replace />
-          ) : isAdmin ? (
-            <Navigate to="/admin" replace />
-          ) : (
-            <CreateListing />
-          )
-        }
-      />
-      <Route
-        path="/dashboard/listings"
-        element={
-          !user ? (
-            <Navigate to="/login" replace />
-          ) : isAdmin ? (
-            <Navigate to="/admin" replace />
-          ) : (
-            <UserDashboard />
-          )
-        }
-      />
-      <Route
-        path="/dashboard/orders"
-        element={
-          !user ? (
-            <Navigate to="/login" replace />
-          ) : isAdmin ? (
-            <Navigate to="/admin" replace />
-          ) : (
-            <UserDashboard />
-          )
-        }
-      />
-      <Route
-        path="/admin"
-        element={
-          !user ? (
-            <Navigate to="/login" replace />
-          ) : isAdmin ? (
-            <AdminDashboard />
-          ) : (
-            <Navigate to="/" replace />
-          )
-        }
-      />
+    <>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <Navigate to="/admin" replace />
+            ) : (
+              <Home />
+            )
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <Navigate to="/admin" replace />
+            ) : (
+              <UserDashboard />
+            )
+          }
+        />
+        <Route
+          path="/dashboard/new"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <Navigate to="/admin" replace />
+            ) : (
+              <CreateListing />
+            )
+          }
+        />
+        <Route
+          path="/dashboard/listings"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <Navigate to="/admin" replace />
+            ) : (
+              <MyListings />
+            )
+          }
+        />
+        <Route
+          path="/dashboard/orders"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <Navigate to="/admin" replace />
+            ) : (
+              <UserDashboard />
+            )
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <AdminDashboard />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
       <Route
         path="/admin/listings"
         element={
           !user ? (
             <Navigate to="/login" replace />
           ) : isAdmin ? (
-            <AdminDashboard />
+            <AdminListings />
           ) : (
             <Navigate to="/" replace />
           )
         }
       />
       <Route
-        path="/admin/commission"
+        path="/admin/listings/:id"
         element={
           !user ? (
             <Navigate to="/login" replace />
           ) : isAdmin ? (
-            <AdminDashboard />
+            <AdminListingDetails />
           ) : (
             <Navigate to="/" replace />
           )
         }
       />
-      <Route
-        path="/admin/users"
-        element={
-          !user ? (
-            <Navigate to="/login" replace />
-          ) : isAdmin ? (
-            <AdminDashboard />
-          ) : (
-            <Navigate to="/" replace />
-          )
-        }
-      />
-      <Route
-        path="/login"
-        element={
-          user ? (
-            <Navigate to={isAdmin ? "/admin" : "/"} replace />
-          ) : (
-            <Login />
-          )
-        }
-      />
-      <Route
-        path="/register"
-        element={
-          user ? (
-            <Navigate to={isAdmin ? "/admin" : "/"} replace />
-          ) : (
-            <Register />
-          )
-        }
-      />
-      <Route
-        path="*"
-        element={
-          user ? (
-            <Navigate to={isAdmin ? "/admin" : "/"} replace />
-          ) : (
-            <Navigate to="/login" replace />
-          )
-        }
-      />
-    </Routes>
+        <Route
+          path="/admin/commission"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <AdminDashboard />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <AdminDashboard />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            user ? (
+              <Navigate to={isAdmin ? "/admin" : "/"} replace />
+            ) : (
+              <Login />
+            )
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            user ? (
+              <Navigate to={isAdmin ? "/admin" : "/"} replace />
+            ) : (
+              <Register />
+            )
+          }
+        />
+        <Route
+          path="*"
+          element={
+            user ? (
+              <Navigate to={isAdmin ? "/admin" : "/"} replace />
+            ) : (
+              <Navigate to="/login" replace />
+            )
+          }
+        />
+      </Routes>
+      <ToastContainer position="top-right" autoClose={4000} hideProgressBar />
+    </>
   );
 };
 
