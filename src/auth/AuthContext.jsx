@@ -1,4 +1,5 @@
 ﻿import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { validateLogin, validateRegister } from "../utils/authValidation";
 
 const AuthContext = createContext(null);
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
@@ -69,9 +70,10 @@ const AuthProvider = ({ children }) => {
   }, []);
 
   const register = async (payload) => {
+    const validPayload = validateRegister(payload);
     const data = await requestJson("/api/auth/register", {
       method: "POST",
-      body: JSON.stringify(payload)
+      body: JSON.stringify(validPayload)
     });
 
     setToken(data.token);
@@ -80,9 +82,10 @@ const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
+    const validPayload = validateLogin({ email, password });
     const data = await requestJson("/api/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify(validPayload)
     });
 
     setToken(data.token);

@@ -1,12 +1,16 @@
 ﻿import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./auth/AuthContext";
+import AdminDashboard from "./pages/AdminDashboard";
+import CreateListing from "./pages/CreateListing";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import UserDashboard from "./pages/UserDashboard";
 
 const App = () => {
   const { user, loading } = useAuth();
+  const isAdmin = user?.role === "admin";
 
   if (loading) {
     return (
@@ -23,17 +27,142 @@ const App = () => {
     <Routes>
       <Route
         path="/"
-        element={user ? <Home /> : <Navigate to="/login" replace />}
+        element={
+          !user ? (
+            <Navigate to="/login" replace />
+          ) : isAdmin ? (
+            <Navigate to="/admin" replace />
+          ) : (
+            <Home />
+          )
+        }
+      />
+      <Route
+        path="/dashboard"
+        element={
+          !user ? (
+            <Navigate to="/login" replace />
+          ) : isAdmin ? (
+            <Navigate to="/admin" replace />
+          ) : (
+            <UserDashboard />
+          )
+        }
+      />
+      <Route
+        path="/dashboard/new"
+        element={
+          !user ? (
+            <Navigate to="/login" replace />
+          ) : isAdmin ? (
+            <Navigate to="/admin" replace />
+          ) : (
+            <CreateListing />
+          )
+        }
+      />
+      <Route
+        path="/dashboard/listings"
+        element={
+          !user ? (
+            <Navigate to="/login" replace />
+          ) : isAdmin ? (
+            <Navigate to="/admin" replace />
+          ) : (
+            <UserDashboard />
+          )
+        }
+      />
+      <Route
+        path="/dashboard/orders"
+        element={
+          !user ? (
+            <Navigate to="/login" replace />
+          ) : isAdmin ? (
+            <Navigate to="/admin" replace />
+          ) : (
+            <UserDashboard />
+          )
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          !user ? (
+            <Navigate to="/login" replace />
+          ) : isAdmin ? (
+            <AdminDashboard />
+          ) : (
+            <Navigate to="/" replace />
+          )
+        }
+      />
+      <Route
+        path="/admin/listings"
+        element={
+          !user ? (
+            <Navigate to="/login" replace />
+          ) : isAdmin ? (
+            <AdminDashboard />
+          ) : (
+            <Navigate to="/" replace />
+          )
+        }
+      />
+      <Route
+        path="/admin/commission"
+        element={
+          !user ? (
+            <Navigate to="/login" replace />
+          ) : isAdmin ? (
+            <AdminDashboard />
+          ) : (
+            <Navigate to="/" replace />
+          )
+        }
+      />
+      <Route
+        path="/admin/users"
+        element={
+          !user ? (
+            <Navigate to="/login" replace />
+          ) : isAdmin ? (
+            <AdminDashboard />
+          ) : (
+            <Navigate to="/" replace />
+          )
+        }
       />
       <Route
         path="/login"
-        element={user ? <Navigate to="/" replace /> : <Login />}
+        element={
+          user ? (
+            <Navigate to={isAdmin ? "/admin" : "/"} replace />
+          ) : (
+            <Login />
+          )
+        }
       />
       <Route
         path="/register"
-        element={user ? <Navigate to="/" replace /> : <Register />}
+        element={
+          user ? (
+            <Navigate to={isAdmin ? "/admin" : "/"} replace />
+          ) : (
+            <Register />
+          )
+        }
       />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route
+        path="*"
+        element={
+          user ? (
+            <Navigate to={isAdmin ? "/admin" : "/"} replace />
+          ) : (
+            <Navigate to="/login" replace />
+          )
+        }
+      />
     </Routes>
   );
 };
