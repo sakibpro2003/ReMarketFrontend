@@ -5,6 +5,7 @@ import { useAuth } from "./auth/AuthContext";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminListingDetails from "./pages/AdminListingDetails";
 import AdminListings from "./pages/AdminListings";
+import AdminUsers from "./pages/AdminUsers";
 import CreateListing from "./pages/CreateListing";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
@@ -155,7 +156,7 @@ const App = () => {
             !user ? (
               <Navigate to="/login" replace />
             ) : isAdmin ? (
-              <AdminDashboard />
+              <AdminUsers />
             ) : (
               <Navigate to="/" replace />
             )
