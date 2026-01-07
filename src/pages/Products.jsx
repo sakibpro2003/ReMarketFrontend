@@ -52,6 +52,9 @@ const Products = () => {
   const [sort, setSort] = useState("newest");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 9;
   const [wishlistIds, setWishlistIds] = useState(new Set());
 
   const apiBase = useMemo(
@@ -66,6 +69,10 @@ const Products = () => {
 
     return () => clearTimeout(timer);
   }, [search]);
+
+  useEffect(() => {
+    setPage((prev) => (prev === 1 ? prev : 1));
+  }, [category, condition, debouncedSearch, maxPrice, minPrice, sort]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -90,6 +97,8 @@ const Products = () => {
         if (sort) {
           params.set("sort", sort);
         }
+        params.set("page", page);
+        params.set("limit", pageSize);
 
         const response = await fetch(`${apiBase}/api/products?${params.toString()}`);
         const data = await response.json();
@@ -99,6 +108,7 @@ const Products = () => {
         }
 
         setProducts(data.products || []);
+        setTotal(typeof data.total === "number" ? data.total : data.count || 0);
       } catch (error) {
         toast.error(error.message || "Failed to load products", {
           toastId: "products-load"
@@ -109,7 +119,7 @@ const Products = () => {
     };
 
     fetchProducts();
-  }, [apiBase, category, condition, debouncedSearch, maxPrice, minPrice, sort]);
+  }, [apiBase, category, condition, debouncedSearch, maxPrice, minPrice, page, pageSize, sort]);
 
   useEffect(() => {
     if (!user) {
@@ -156,6 +166,18 @@ const Products = () => {
   const formatPrice = (value) =>
     new Intl.NumberFormat("en-BD").format(value || 0);
 
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const pageNumbers = (() => {
+    const maxButtons = 5;
+    const start = Math.max(1, page - Math.floor(maxButtons / 2));
+    const end = Math.min(totalPages, start + maxButtons - 1);
+    const adjustedStart = Math.max(1, end - maxButtons + 1);
+    return Array.from(
+      { length: end - adjustedStart + 1 },
+      (_, index) => adjustedStart + index
+    );
+  })();
+
   const clearFilters = () => {
     setSearch("");
     setCategory("all");
@@ -163,6 +185,7 @@ const Products = () => {
     setMinPrice("");
     setMaxPrice("");
     setSort("newest");
+    setPage(1);
   };
 
   const toggleWishlist = async (productId) => {
@@ -210,6 +233,8 @@ const Products = () => {
       });
     }
   };
+
+  const loaderItems = Array.from({ length: pageSize }, (_, index) => index);
 
   return (
     <div className="page page-stack">
@@ -326,19 +351,35 @@ const Products = () => {
                 <p className="helper-text">
                   {loading
                     ? "Loading listings..."
-                    : `${products.length} listings available`}
+                    : `${total} listings available`}
                 </p>
               </div>
             </div>
 
             {loading ? (
-              <div className="list-card">
-                <h3 className="list-card-title">Fetching products...</h3>
-                <p className="helper-text">Hang tight while we load listings.</p>
+              <div className="products-loader">
+                <div className="products-grid">
+                  {loaderItems.map((item) => (
+                    <div key={item} className="product-card product-card-skeleton">
+                      <div className="skeleton-image" />
+                      <div className="product-info">
+                        <div className="skeleton-line skeleton-title" />
+                        <div className="skeleton-line skeleton-subtitle" />
+                        <div className="skeleton-row">
+                          <span className="skeleton-line skeleton-price" />
+                          <span className="skeleton-line skeleton-location" />
+                        </div>
+                        <div className="skeleton-button" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="helper-text">Loading listings...</p>
               </div>
             ) : products.length ? (
-              <div className="products-grid">
-                {products.map((product) => (
+              <>
+                <div className="products-grid">
+                  {products.map((product) => (
                   <div key={product._id} className="product-card">
                     <button
                       type="button"
@@ -396,8 +437,50 @@ const Products = () => {
                       </Link>
                     </div>
                   </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                {totalPages > 1 ? (
+                  <div className="pagination">
+                    <button
+                      className="pagination-btn"
+                      type="button"
+                      onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                      disabled={page === 1}
+                    >
+                      Prev
+                    </button>
+                    <div className="pagination-pages">
+                      {pageNumbers.map((pageNumber) => (
+                        <button
+                          key={pageNumber}
+                          className={
+                            pageNumber === page
+                              ? "pagination-btn pagination-btn-active"
+                              : "pagination-btn"
+                          }
+                          type="button"
+                          onClick={() => setPage(pageNumber)}
+                        >
+                          {pageNumber}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      className="pagination-btn"
+                      type="button"
+                      onClick={() =>
+                        setPage((prev) => Math.min(prev + 1, totalPages))
+                      }
+                      disabled={page === totalPages}
+                    >
+                      Next
+                    </button>
+                    <span className="pagination-info">
+                      Page {page} of {totalPages}
+                    </span>
+                  </div>
+                ) : null}
+              </>
             ) : (
               <div className="list-card">
                 <h3 className="list-card-title">No products found</h3>

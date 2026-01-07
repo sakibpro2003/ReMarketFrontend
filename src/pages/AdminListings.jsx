@@ -33,6 +33,9 @@ const AdminListings = () => {
   const [listings, setListings] = useState([]);
   const [status, setStatus] = useState("pending");
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 6;
 
   const apiBase = useMemo(
     () => import.meta.env.VITE_API_BASE_URL || "http://localhost:5000",
@@ -52,7 +55,7 @@ const AdminListings = () => {
       try {
         const token = localStorage.getItem("remarket_token");
         const response = await fetch(
-          `${apiBase}/api/admin/listings?status=${status}`,
+          `${apiBase}/api/admin/listings?status=${status}&page=${page}&limit=${pageSize}`,
           {
             headers: {
               Authorization: `Bearer ${token}`
@@ -66,6 +69,7 @@ const AdminListings = () => {
         }
 
         setListings(data.products || []);
+        setTotal(data.total || 0);
       } catch (error) {
         toast.error(error.message || "Failed to load listings", {
           toastId: `admin-listings-${status}`
@@ -76,7 +80,7 @@ const AdminListings = () => {
     };
 
     loadListings();
-  }, [apiBase, status]);
+  }, [apiBase, page, pageSize, status]);
 
   const formatPrice = (value) => {
     if (Number.isNaN(value)) {
@@ -84,6 +88,18 @@ const AdminListings = () => {
     }
     return new Intl.NumberFormat("en-BD").format(value);
   };
+
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const pageNumbers = (() => {
+    const maxButtons = 5;
+    const start = Math.max(1, page - Math.floor(maxButtons / 2));
+    const end = Math.min(totalPages, start + maxButtons - 1);
+    const adjustedStart = Math.max(1, end - maxButtons + 1);
+    return Array.from(
+      { length: end - adjustedStart + 1 },
+      (_, index) => adjustedStart + index
+    );
+  })();
 
   return (
     <div className="page page-stack">
@@ -110,7 +126,10 @@ const AdminListings = () => {
                         : "filter-btn"
                     }
                     type="button"
-                    onClick={() => setStatus(option.value)}
+                    onClick={() => {
+                      setStatus(option.value);
+                      setPage(1);
+                    }}
                   >
                     {option.label}
                   </button>

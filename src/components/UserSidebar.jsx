@@ -10,6 +10,18 @@ const UserSidebar = () => {
 
   return (
     <aside className="sidebar">
+      <Link className="sidebar-home" to="/">
+        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path
+            d="M3 10.5 12 3l9 7.5v9a1.5 1.5 0 0 1-1.5 1.5H14v-6h-4v6H4.5A1.5 1.5 0 0 1 3 19.5z"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinejoin="round"
+          />
+        </svg>
+        Home
+      </Link>
       <Link className="sidebar-brand" to="/">
         <span className="brand-mark">RM</span>
         ReMarket

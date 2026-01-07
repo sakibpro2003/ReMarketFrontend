@@ -39,11 +39,16 @@ const UserDashboard = () => {
                 <h1>{header.title}</h1>
                 <p className="helper-text">{header.subtitle}</p>
               </div>
-              {isOverview ? (
-                <Link className="primary-btn button-link" to="/dashboard/new">
-                  New listing
+              <div className="content-actions">
+                <Link className="secondary-btn button-link" to="/">
+                  Home
                 </Link>
-              ) : null}
+                {isOverview ? (
+                  <Link className="primary-btn button-link" to="/dashboard/new">
+                    New listing
+                  </Link>
+                ) : null}
+              </div>
             </div>
 
             {isOverview ? (
