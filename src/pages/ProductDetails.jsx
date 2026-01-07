@@ -8,7 +8,7 @@ const conditionLabels = {
   new: "New",
   like_new: "Like new",
   good: "Good",
-  fair: "Fair"
+  fair: "Fair",
 };
 
 const ProductDetails = () => {
@@ -37,7 +37,7 @@ const ProductDetails = () => {
         setCommissionRate(data.commissionRate || 0);
       } catch (error) {
         toast.error(error.message || "Failed to load product", {
-          toastId: "product-detail"
+          toastId: "product-detail",
         });
       } finally {
         setLoading(false);
@@ -49,8 +49,6 @@ const ProductDetails = () => {
 
   const formatPrice = (value) =>
     new Intl.NumberFormat("en-BD").format(value || 0);
-
- 
 
   if (loading) {
     return (
@@ -93,8 +91,7 @@ const ProductDetails = () => {
 
   const userId = user?.id || user?._id;
   const sellerId = product.seller?._id || product.seller;
-  const isOwner =
-    userId && sellerId && String(userId) === String(sellerId);
+  const isOwner = userId && sellerId && String(userId) === String(sellerId);
   const commissionPercent = Math.round(commissionRate * 1000) / 10;
   const previewQuantity = 1;
   const subtotal = Number((product.price * previewQuantity).toFixed(2));
@@ -126,7 +123,9 @@ const ProductDetails = () => {
         <div className="product-detail product-detail-compact">
           <div className="product-detail-header">
             <div className="product-detail-title-stack">
-              <span className="badge product-detail-badge">Approved listing</span>
+              <span className="badge product-detail-badge">
+                Approved listing
+              </span>
               <h1 className="product-detail-title">{product.title}</h1>
               <div className="product-detail-meta">
                 <span className="product-detail-chip">{product.category}</span>
@@ -134,7 +133,9 @@ const ProductDetails = () => {
                   {conditionLabels[product.condition] || "Condition"}
                 </span>
                 {product.location ? (
-                  <span className="product-detail-chip">{product.location}</span>
+                  <span className="product-detail-chip">
+                    {product.location}
+                  </span>
                 ) : null}
                 <span className="product-detail-chip">
                   {product.negotiable ? "Negotiable" : "Fixed price"}
@@ -274,13 +275,18 @@ const ProductDetails = () => {
                   {product.attributes?.length ? (
                     <div className="attribute-grid">
                       {product.attributes.map((attr, index) => (
-                        <div key={`${attr.key}-${index}`} className="text-pink-800 flex bg-pink-200 h-6 p-2 rounded-lg items-center justify-between content-center text-sm">
+                        <div
+                          key={`${attr.key}-${index}`}
+                          className="text-pink-800 flex bg-pink-200 h-6 p-2 rounded-lg items-center justify-between content-center text-sm"
+                        >
                           <strong>{attr.key}:</strong> {attr.value}
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <p className="helper-text">No custom attributes provided.</p>
+                    <p className="helper-text">
+                      No custom attributes provided.
+                    </p>
                   )}
                 </div>
 
@@ -296,7 +302,6 @@ const ProductDetails = () => {
                     </div>
                   </div>
                 ) : null}
-
               </div>
             </div>
           </div>
@@ -307,5 +312,3 @@ const ProductDetails = () => {
 };
 
 export default ProductDetails;
-
-
