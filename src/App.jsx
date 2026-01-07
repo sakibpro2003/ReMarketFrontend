@@ -5,8 +5,10 @@ import { useAuth } from "./auth/AuthContext";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminListingDetails from "./pages/AdminListingDetails";
 import AdminListings from "./pages/AdminListings";
+import AdminOrphanListings from "./pages/AdminOrphanListings";
 import AdminUsers from "./pages/AdminUsers";
 import CreateListing from "./pages/CreateListing";
+import Checkout from "./pages/Checkout";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import MyListings from "./pages/MyListings";
@@ -130,8 +132,21 @@ const App = () => {
           )
         }
       />
+        <Route
+          path="/admin/orphans"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <AdminOrphanListings />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<ProductDetails />} />
+        <Route path="/checkout/:id" element={<Checkout />} />
         <Route
           path="/wishlist"
           element={

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../auth/AuthContext";
@@ -52,10 +52,17 @@ const Products = () => {
   const [sort, setSort] = useState("newest");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(() => {
+    if (typeof window === "undefined") {
+      return 1;
+    }
+    const storedPage = Number(window.localStorage.getItem("products_page"));
+    return Number.isFinite(storedPage) && storedPage > 0 ? storedPage : 1;
+  });
   const [total, setTotal] = useState(0);
   const pageSize = 9;
   const [wishlistIds, setWishlistIds] = useState(new Set());
+  const hasMountedRef = useRef(false);
 
   const apiBase = useMemo(
     () => import.meta.env.VITE_API_BASE_URL || "http://localhost:5000",
@@ -71,10 +78,23 @@ const Products = () => {
   }, [search]);
 
   useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
     setPage((prev) => (prev === 1 ? prev : 1));
   }, [category, condition, debouncedSearch, maxPrice, minPrice, sort]);
 
   useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    window.localStorage.setItem("products_page", String(page));
+  }, [page]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let isActive = true;
     const fetchProducts = async () => {
       setLoading(true);
       try {
@@ -100,25 +120,42 @@ const Products = () => {
         params.set("page", page);
         params.set("limit", pageSize);
 
-        const response = await fetch(`${apiBase}/api/products?${params.toString()}`);
+        const response = await fetch(`${apiBase}/api/products?${params.toString()}`, {
+          signal: controller.signal
+        });
         const data = await response.json();
 
         if (!response.ok) {
           throw new Error(data?.error || "Failed to load products");
         }
 
+        if (!isActive) {
+          return;
+        }
+
         setProducts(data.products || []);
         setTotal(typeof data.total === "number" ? data.total : data.count || 0);
+        if (typeof data.page === "number" && data.page !== page) {
+          setPage(data.page);
+        }
       } catch (error) {
-        toast.error(error.message || "Failed to load products", {
-          toastId: "products-load"
-        });
+        if (error.name !== "AbortError") {
+          toast.error(error.message || "Failed to load products", {
+            toastId: "products-load"
+          });
+        }
       } finally {
-        setLoading(false);
+        if (isActive) {
+          setLoading(false);
+        }
       }
     };
 
     fetchProducts();
+    return () => {
+      isActive = false;
+      controller.abort();
+    };
   }, [apiBase, category, condition, debouncedSearch, maxPrice, minPrice, page, pageSize, sort]);
 
   useEffect(() => {
@@ -210,6 +247,15 @@ const Products = () => {
       (_, index) => adjustedStart + index
     );
   })();
+
+  useEffect(() => {
+    if (loading) {
+      return;
+    }
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [loading, page, totalPages]);
 
   const clearFilters = () => {
     setSearch("");
