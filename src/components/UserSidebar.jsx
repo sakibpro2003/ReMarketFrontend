@@ -28,10 +28,22 @@ const UserSidebar = () => {
       </Link>
 
       <div className="sidebar-user">
-        <span className="sidebar-user-name">
-          {user ? `${user.firstName} ${user.lastName}` : ""}
-        </span>
-        <span className="sidebar-user-role">User</span>
+        <div className="avatar avatar-sm">
+          {user?.avatarUrl ? (
+            <img src={user.avatarUrl} alt={`${user.firstName} ${user.lastName}`} />
+          ) : (
+            <span>
+              {`${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase() ||
+                "U"}
+            </span>
+          )}
+        </div>
+        <div className="sidebar-user-meta">
+          <span className="sidebar-user-name">
+            {user ? `${user.firstName} ${user.lastName}` : ""}
+          </span>
+          <span className="sidebar-user-role">User</span>
+        </div>
       </div>
 
       <nav className="sidebar-nav">
@@ -46,6 +58,9 @@ const UserSidebar = () => {
         </NavLink>
         <NavLink className={linkClass} to="/dashboard/orders">
           Orders
+        </NavLink>
+        <NavLink className={linkClass} to="/dashboard/profile">
+          Profile
         </NavLink>
       </nav>
 

@@ -95,6 +95,18 @@ const App = () => {
           }
         />
         <Route
+          path="/dashboard/profile"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <Navigate to="/admin" replace />
+            ) : (
+              <UserDashboard />
+            )
+          }
+        />
+        <Route
           path="/admin"
           element={
             !user ? (

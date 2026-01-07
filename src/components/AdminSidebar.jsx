@@ -16,10 +16,22 @@ const AdminSidebar = () => {
       </Link>
 
       <div className="sidebar-user">
-        <span className="sidebar-user-name">
-          {user ? `${user.firstName} ${user.lastName}` : ""}
-        </span>
-        <span className="sidebar-user-role">Admin</span>
+        <div className="avatar avatar-sm">
+          {user?.avatarUrl ? (
+            <img src={user.avatarUrl} alt={`${user.firstName} ${user.lastName}`} />
+          ) : (
+            <span>
+              {`${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase() ||
+                "A"}
+            </span>
+          )}
+        </div>
+        <div className="sidebar-user-meta">
+          <span className="sidebar-user-name">
+            {user ? `${user.firstName} ${user.lastName}` : ""}
+          </span>
+          <span className="sidebar-user-role">Admin</span>
+        </div>
       </div>
 
       <nav className="sidebar-nav">

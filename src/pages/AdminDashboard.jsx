@@ -4,14 +4,23 @@ import AdminSidebar from "../components/AdminSidebar";
 
 const AdminDashboard = () => {
   const { pathname } = useLocation();
+  const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [transactions, setTransactions] = useState([]);
+  const [transactionSummary, setTransactionSummary] = useState({
+    totalOrders: 0,
+    totalSales: 0,
+    totalCommission: 0,
+    totalGross: 0
+  });
+  const [transactionsLoading, setTransactionsLoading] = useState(false);
 
   useEffect(() => {
     const loadNotifications = async () => {
       try {
         const token = localStorage.getItem("remarket_token");
-        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || "http://localhost:5000"}/api/admin/notifications`, {
+        const response = await fetch(`${apiBase}/api/admin/notifications`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -29,8 +38,40 @@ const AdminDashboard = () => {
       }
     };
 
+    const loadTransactions = async () => {
+      try {
+        setTransactionsLoading(true);
+        const token = localStorage.getItem("remarket_token");
+        const response = await fetch(`${apiBase}/api/admin/transactions`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const data = await response.json();
+        setTransactions(data.transactions || []);
+        setTransactionSummary(
+          data.summary || {
+            totalOrders: 0,
+            totalSales: 0,
+            totalCommission: 0,
+            totalGross: 0
+          }
+        );
+      } catch (error) {
+        console.error("Failed to load transactions", error);
+      } finally {
+        setTransactionsLoading(false);
+      }
+    };
+
     loadNotifications();
-  }, []);
+    loadTransactions();
+  }, [apiBase]);
 
   const isListings = pathname.startsWith("/admin/listings");
   const isCommission = pathname.startsWith("/admin/commission");
@@ -60,6 +101,110 @@ const AdminDashboard = () => {
         title: "Admin operations overview",
         subtitle: "Monitor listings, users, and platform revenue."
       };
+
+  const formatPrice = (value) =>
+    new Intl.NumberFormat("en-BD").format(value || 0);
+
+  const formatDate = (value) => {
+    if (!value) {
+      return "--";
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return "--";
+    }
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+  };
+
+  const transactionsSection = (
+    <div className="stack">
+      <h3 className="section-title">Transactions</h3>
+      <div className="stat-grid">
+        <div className="stat-card">
+          <p className="stat-label">Platform revenue</p>
+          <h2 className="stat-value">
+            BDT {formatPrice(transactionSummary.totalCommission)}
+          </h2>
+          <span className="helper-text">
+            {transactionSummary.totalOrders} orders
+          </span>
+        </div>
+        <div className="stat-card">
+          <p className="stat-label">Seller payouts</p>
+          <h2 className="stat-value">
+            BDT {formatPrice(transactionSummary.totalSales)}
+          </h2>
+          <span className="helper-text">Net item totals</span>
+        </div>
+        <div className="stat-card">
+          <p className="stat-label">Gross volume</p>
+          <h2 className="stat-value">
+            BDT {formatPrice(transactionSummary.totalGross)}
+          </h2>
+          <span className="helper-text">Buyer payments</span>
+        </div>
+      </div>
+      <div className="list-grid">
+        {transactionsLoading ? (
+          <div className="list-card">
+            <h3 className="list-card-title">Loading transactions...</h3>
+            <p className="helper-text">Fetching payouts and commissions.</p>
+          </div>
+        ) : transactions.length ? (
+          transactions.map((item) => (
+            <div key={item.id} className="list-card list-card-strong">
+              <div className="list-card-header">
+                <div className="list-card-title-row">
+                  <div className="list-card-thumb list-card-thumb-placeholder">
+                    <span>{item.productTitle?.[0] || "O"}</span>
+                  </div>
+                  <div className="list-card-title-stack">
+                    <h3 className="list-card-title">{item.productTitle}</h3>
+                    <span className="helper-text">
+                      Seller: {item.sellerName}
+                    </span>
+                  </div>
+                </div>
+                <div className="list-card-status-stack">
+                  <span className="list-card-role">Order</span>
+                  <span className="helper-text">
+                    {formatDate(item.createdAt)}
+                  </span>
+                </div>
+              </div>
+              <div className="list-card-meta">
+                <div>
+                  <span>Seller payout</span>
+                  <span>BDT {formatPrice(item.price)}</span>
+                </div>
+                <div>
+                  <span>Platform commission</span>
+                  <span>BDT {formatPrice(item.commissionAmount)}</span>
+                </div>
+                <div>
+                  <span>Buyer total</span>
+                  <span>BDT {formatPrice(item.totalAmount)}</span>
+                </div>
+                <div>
+                  <span>Buyer</span>
+                  <span>{item.buyerName}</span>
+                </div>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="list-card">
+            <h3 className="list-card-title">No transactions yet</h3>
+            <p className="helper-text">Orders will appear here once placed.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="page page-stack">
@@ -142,6 +287,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                 </div>
+                {transactionsSection}
               </>
             ) : isListings ? (
               <div className="panel-grid">
@@ -168,22 +314,25 @@ const AdminDashboard = () => {
                 </div>
               </div>
             ) : isCommission ? (
-              <div className="panel-grid">
-                <div className="panel-card">
-                  <h3>Current commission</h3>
-                  <p className="helper-text">Applies to new orders only.</p>
-                  <button className="primary-btn" type="button">
-                    Change rate
-                  </button>
+              <>
+                <div className="panel-grid">
+                  <div className="panel-card">
+                    <h3>Current commission</h3>
+                    <p className="helper-text">Applies to new orders only.</p>
+                    <button className="primary-btn" type="button">
+                      Change rate
+                    </button>
+                  </div>
+                  <div className="panel-card">
+                    <h3>Fee history</h3>
+                    <p className="helper-text">Track changes over time.</p>
+                    <button className="secondary-btn" type="button">
+                      View history
+                    </button>
+                  </div>
                 </div>
-                <div className="panel-card">
-                  <h3>Fee history</h3>
-                  <p className="helper-text">Track changes over time.</p>
-                  <button className="secondary-btn" type="button">
-                    View history
-                  </button>
-                </div>
-              </div>
+                {transactionsSection}
+              </>
             ) : (
               <div className="panel-grid">
                 <div className="panel-card">

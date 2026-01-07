@@ -17,6 +17,16 @@ const Home = () => {
           </div>
           <div>
             <strong>Signed in as:</strong>
+            <div className="avatar avatar-sm">
+              {user?.avatarUrl ? (
+                <img src={user.avatarUrl} alt={`${user.firstName} ${user.lastName}`} />
+              ) : (
+                <span>
+                  {`${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}`.toUpperCase() ||
+                    "U"}
+                </span>
+              )}
+            </div>
             <div>{user ? `${user.firstName} ${user.lastName}` : ""}</div>
             <div>{user?.email}</div>
             <div>{user?.phone}</div>

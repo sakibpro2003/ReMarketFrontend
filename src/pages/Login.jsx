@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+﻿import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { authErrorMessage } from "../utils/authErrors";
@@ -50,14 +50,20 @@ const Login = () => {
           <div>
             <h1 className="auth-title">Sell smarter. Buy better.</h1>
             <p className="auth-subtitle">
-              A curated marketplace for verified second-hand listings, built for fast
-              local delivery.
+              A curated marketplace for verified second-hand listings, built for
+              fast local delivery.
             </p>
           </div>
           <div className="feature-list">
-            <div className="feature-item">Approve listings before they go live.</div>
-            <div className="feature-item">Secure payments with transparent fees.</div>
-            <div className="feature-item">Delivery details stored per order.</div>
+            <div className="feature-item">
+              Approve listings before they go live.
+            </div>
+            <div className="feature-item">
+              Secure payments with transparent fees.
+            </div>
+            <div className="feature-item">
+              Delivery details stored per order.
+            </div>
           </div>
         </div>
 
@@ -65,7 +71,9 @@ const Login = () => {
           <div className="auth-card">
             <div>
               <h1>Sign in</h1>
-              <p className="helper-text">Use your email and password to continue.</p>
+              <p className="helper-text">
+                Use your email and password to continue.
+              </p>
             </div>
 
             {error ? <div className="error">{error}</div> : null}
@@ -118,17 +126,17 @@ const Login = () => {
                   className="secondary-btn"
                   type="button"
                   disabled={loading}
-                  onClick={() => handleDemoLogin("user1@gmail.com")}
+                  onClick={() => handleDemoLogin("marika@gmail.com")}
                 >
-                  User 1 demo
+                  Marika
                 </button>
                 <button
                   className="secondary-btn"
                   type="button"
                   disabled={loading}
-                  onClick={() => handleDemoLogin("user2@gmail.com")}
+                  onClick={() => handleDemoLogin("maisha@gmail.com")}
                 >
-                  User 2 demo
+                  Maisha
                 </button>
               </div>
             </div>

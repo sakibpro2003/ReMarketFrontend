@@ -166,6 +166,39 @@ const Products = () => {
   const formatPrice = (value) =>
     new Intl.NumberFormat("en-BD").format(value || 0);
 
+  const categoryLabel =
+    categories.find((option) => option.value === category)?.label || "All";
+  const conditionLabel =
+    conditions.find((option) => option.value === condition)?.label ||
+    "All conditions";
+  const sortLabel =
+    sortOptions.find((option) => option.value === sort)?.label ||
+    "Newest first";
+  const minValue = minPrice ? Number(minPrice) : null;
+  const maxValue = maxPrice ? Number(maxPrice) : null;
+  const priceLabel =
+    minValue !== null && maxValue !== null
+      ? `BDT ${formatPrice(minValue)} - ${formatPrice(maxValue)}`
+      : minValue !== null
+      ? `From BDT ${formatPrice(minValue)}`
+      : maxValue !== null
+      ? `Up to BDT ${formatPrice(maxValue)}`
+      : "Any price";
+  const hasFilters =
+    debouncedSearch ||
+    category !== "all" ||
+    condition !== "all" ||
+    minPrice ||
+    maxPrice ||
+    sort !== "newest";
+  const filterChips = [
+    debouncedSearch ? `Search: "${debouncedSearch}"` : "All listings",
+    category !== "all" ? `Category: ${categoryLabel}` : "All categories",
+    condition !== "all" ? `Condition: ${conditionLabel}` : "Any condition",
+    priceLabel,
+    `Sort: ${sortLabel}`
+  ];
+
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const pageNumbers = (() => {
     const maxButtons = 5;
@@ -257,6 +290,56 @@ const Products = () => {
             </div>
           </div>
         )}
+
+        <section className="market-hero">
+          <div>
+            <span className="market-hero-badge">Pink luxe market</span>
+            <h1 className="market-hero-title">
+              Discover pre-loved pieces with a premium glow.
+            </h1>
+            <p className="market-hero-text">
+              Shop curated listings from trusted sellers. Mix timeless classics
+              with modern essentials in a palette that feels effortlessly luxe.
+            </p>
+            <div className="market-hero-actions">
+              <span className="market-hero-stat">
+                {loading ? "Loading listings..." : `${total} listings available`}
+              </span>
+              <span className="market-hero-stat">
+                Updated daily by local sellers
+              </span>
+            </div>
+          </div>
+          <div className="market-hero-card">
+            <div className="market-hero-card-header">
+              <div>
+                <p className="market-hero-card-title">Filter snapshot</p>
+                <p className="helper-text">Tune your results instantly.</p>
+              </div>
+              {hasFilters ? (
+                <button
+                  className="ghost-btn market-hero-reset"
+                  type="button"
+                  onClick={clearFilters}
+                >
+                  Reset
+                </button>
+              ) : null}
+            </div>
+            <div className="market-hero-chips">
+              {filterChips.map((chip) => (
+                <span key={chip} className="market-chip">
+                  {chip}
+                </span>
+              ))}
+            </div>
+            <div className="market-hero-footer">
+              <span className="helper-text">
+                Page {page} of {totalPages}
+              </span>
+            </div>
+          </div>
+        </section>
 
         <div className="products-layout">
           <aside className="products-sidebar">
@@ -354,6 +437,12 @@ const Products = () => {
                     : `${total} listings available`}
                 </p>
               </div>
+              <div className="products-header-meta">
+                <span className="products-header-chip">Sort: {sortLabel}</span>
+                <span className="products-header-chip">
+                  Page {page} of {totalPages}
+                </span>
+              </div>
             </div>
 
             {loading ? (
@@ -380,67 +469,85 @@ const Products = () => {
               <>
                 <div className="products-grid">
                   {products.map((product) => (
-                  <div key={product._id} className="product-card">
-                    <button
-                      type="button"
-                      className={
-                        wishlistIds.has(product._id)
-                          ? "wishlist-button wishlist-button-active"
-                          : "wishlist-button"
-                      }
-                      onClick={() => toggleWishlist(product._id)}
-                      aria-label={
-                        wishlistIds.has(product._id)
-                          ? "Remove from wishlist"
-                          : "Add to wishlist"
-                      }
-                    >
-                      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                        <path
-                          d="M12 20.5s-7-4.4-9.3-8.2C.9 9.6 2.2 6 5.7 5.2c2-.4 3.7.5 4.8 2 1.1-1.5 2.8-2.4 4.8-2 3.5.8 4.8 4.4 3 7.1C19 16.1 12 20.5 12 20.5z"
-                          fill="currentColor"
-                          stroke="currentColor"
-                          strokeWidth="1.2"
-                        />
-                      </svg>
-                    </button>
-                    {product.images?.[0]?.url ? (
-                      <img
-                        src={product.images[0].url}
-                        alt={product.title}
-                        className="product-image"
-                      />
-                    ) : (
-                      <div className="product-image product-image-placeholder">
-                        <span>{product.category?.[0] || "P"}</span>
+                    <div key={product._id} className="product-card">
+                      <div className="product-card-media">
+                        <button
+                          type="button"
+                          className={
+                            wishlistIds.has(product._id)
+                              ? "wishlist-button wishlist-button-active"
+                              : "wishlist-button"
+                          }
+                          onClick={() => toggleWishlist(product._id)}
+                          aria-label={
+                            wishlistIds.has(product._id)
+                              ? "Remove from wishlist"
+                              : "Add to wishlist"
+                          }
+                        >
+                          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                            <path
+                              d="M12 20.5s-7-4.4-9.3-8.2C.9 9.6 2.2 6 5.7 5.2c2-.4 3.7.5 4.8 2 1.1-1.5 2.8-2.4 4.8-2 3.5.8 4.8 4.4 3 7.1C19 16.1 12 20.5 12 20.5z"
+                              fill="currentColor"
+                              stroke="currentColor"
+                              strokeWidth="1.2"
+                            />
+                          </svg>
+                        </button>
+                        {product.images?.[0]?.url ? (
+                          <img
+                            src={product.images[0].url}
+                            alt={product.title}
+                            className="product-image"
+                          />
+                        ) : (
+                          <div className="product-image product-image-placeholder">
+                            <span>{product.category?.[0] || "P"}</span>
+                          </div>
+                        )}
+                        <div className="product-card-overlay">
+                          <span className="product-pill">{product.category}</span>
+                          <span className="product-pill product-pill-outline">
+                            {conditionLabels[product.condition] || "Condition"}
+                          </span>
+                        </div>
                       </div>
-                    )}
-                    <div className="product-info">
-                      <div>
-                        <h3>{product.title}</h3>
-                        <p className="helper-text">
-                          {product.category} ·{" "}
-                          {conditionLabels[product.condition] || "Condition"}
-                        </p>
+                      <div className="product-info">
+                        <div className="product-title-row">
+                          <div className="product-title-stack">
+                            <h3>{product.title}</h3>
+                            <p className="product-subtitle">
+                              {product.category} ·{" "}
+                              {conditionLabels[product.condition] || "Condition"}
+                            </p>
+                          </div>
+                          <span className="product-price-tag">
+                            BDT {formatPrice(product.price)}
+                          </span>
+                        </div>
+                        <div className="product-meta-row">
+                          <span className="product-location">{product.location}</span>
+                          <span className="product-stock">
+                            {product.quantity} left
+                          </span>
+                          {product.negotiable ? (
+                            <span className="product-chip">Negotiable</span>
+                          ) : null}
+                        </div>
+                        <div className="product-actions">
+                          <Link
+                            className="secondary-btn button-link"
+                            to={`/products/${product._id}`}
+                          >
+                            View product
+                          </Link>
+                        </div>
                       </div>
-                      <div className="product-meta">
-                        <span className="product-price">
-                          ৳{formatPrice(product.price)}
-                        </span>
-                        <span className="helper-text">{product.location}</span>
-                      </div>
-                      <Link
-                        className="secondary-btn button-link"
-                        to={`/products/${product._id}`}
-                      >
-                        View product
-                      </Link>
                     </div>
-                  </div>
                   ))}
                 </div>
                 {totalPages > 1 ? (
-                  <div className="pagination">
+                  <div className="pagination pagination-market">
                     <button
                       className="pagination-btn"
                       type="button"

@@ -98,13 +98,18 @@ const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (nextUser) => {
+    setUser(nextUser);
+  };
+
   const value = useMemo(
     () => ({
       user,
       loading,
       register,
       login,
-      logout
+      logout,
+      updateUser
     }),
     [user, loading]
   );
