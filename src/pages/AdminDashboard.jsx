@@ -1,5 +1,6 @@
 ﻿import React, { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { toast } from "react-toastify";
 import AdminSidebar from "../components/AdminSidebar";
 
 const AdminDashboard = () => {
@@ -15,6 +16,17 @@ const AdminDashboard = () => {
     totalGross: 0
   });
   const [transactionsLoading, setTransactionsLoading] = useState(false);
+  const [commissionRate, setCommissionRate] = useState(null);
+  const [commissionHistory, setCommissionHistory] = useState([]);
+  const [commissionLoading, setCommissionLoading] = useState(false);
+  const [rateModalOpen, setRateModalOpen] = useState(false);
+  const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [rateInput, setRateInput] = useState("");
+  const [rateSaving, setRateSaving] = useState(false);
+  const isListings = pathname.startsWith("/admin/listings");
+  const isCommission = pathname.startsWith("/admin/commission");
+  const isUsers = pathname.startsWith("/admin/users");
+  const isOverview = !isListings && !isCommission && !isUsers;
 
   useEffect(() => {
     const loadNotifications = async () => {
@@ -73,11 +85,6 @@ const AdminDashboard = () => {
     loadTransactions();
   }, [apiBase]);
 
-  const isListings = pathname.startsWith("/admin/listings");
-  const isCommission = pathname.startsWith("/admin/commission");
-  const isUsers = pathname.startsWith("/admin/users");
-  const isOverview = !isListings && !isCommission && !isUsers;
-
   const header = isListings
     ? {
         badge: "Listings",
@@ -119,6 +126,141 @@ const AdminDashboard = () => {
       year: "numeric"
     });
   };
+
+  const formatDateTime = (value) => {
+    if (!value) {
+      return "--";
+    }
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return "--";
+    }
+    return date.toLocaleString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  };
+
+  const formatPercent = (value) => {
+    if (typeof value !== "number") {
+      return "--";
+    }
+    const percent = value * 100;
+    const formatted = percent % 1 === 0 ? percent.toFixed(0) : percent.toFixed(2);
+    return `${formatted}%`;
+  };
+
+  const loadCommission = async () => {
+    try {
+      setCommissionLoading(true);
+      const token = localStorage.getItem("remarket_token");
+      const response = await fetch(`${apiBase}/api/admin/commission`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        return;
+      }
+
+      const data = await response.json();
+      setCommissionRate(typeof data.rate === "number" ? data.rate : null);
+      setCommissionHistory(data.history || []);
+    } catch (error) {
+      console.error("Failed to load commission settings", error);
+    } finally {
+      setCommissionLoading(false);
+    }
+  };
+
+  const openRateModal = () => {
+    if (typeof commissionRate === "number") {
+      const percent = commissionRate * 100;
+      const formatted = percent % 1 === 0 ? percent.toFixed(0) : percent.toFixed(2);
+      setRateInput(formatted);
+    } else {
+      setRateInput("");
+    }
+    setRateModalOpen(true);
+  };
+
+  const closeRateModal = () => {
+    setRateModalOpen(false);
+  };
+
+  const openHistoryModal = async () => {
+    if (!commissionHistory.length) {
+      await loadCommission();
+    }
+    setHistoryModalOpen(true);
+  };
+
+  const closeHistoryModal = () => {
+    setHistoryModalOpen(false);
+  };
+
+  const handleSaveRate = async () => {
+    if (String(rateInput).trim() === "") {
+      toast.error("Enter a commission rate.", {
+        toastId: "commission-rate-empty"
+      });
+      return;
+    }
+
+    const parsed = Number(rateInput);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+      toast.error("Enter a valid commission rate.", {
+        toastId: "commission-rate-invalid"
+      });
+      return;
+    }
+
+    try {
+      setRateSaving(true);
+      const token = localStorage.getItem("remarket_token");
+      const response = await fetch(`${apiBase}/api/admin/commission`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ rate: parsed })
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "Failed to update commission rate");
+      }
+
+      setCommissionRate(typeof data.rate === "number" ? data.rate : commissionRate);
+      if (data.historyItem) {
+        setCommissionHistory((prev) => [data.historyItem, ...prev].slice(0, 12));
+      } else {
+        await loadCommission();
+      }
+      toast.success("Commission rate updated.", {
+        toastId: "commission-rate-success"
+      });
+      setRateModalOpen(false);
+    } catch (error) {
+      toast.error(error.message || "Failed to update commission rate", {
+        toastId: "commission-rate-error"
+      });
+    } finally {
+      setRateSaving(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!isCommission) {
+      return;
+    }
+    loadCommission();
+  }, [apiBase, isCommission]);
 
   const summaryPills = isCommission
     ? [
@@ -191,8 +333,8 @@ const AdminDashboard = () => {
   const commissionHighlights = [
     {
       label: "Current rate",
-      value: "--%",
-      caption: "Set in settings"
+      value: commissionLoading ? "--%" : formatPercent(commissionRate),
+      caption: "Applied to new orders"
     },
     {
       label: "Gross volume",
@@ -634,12 +776,16 @@ const AdminDashboard = () => {
                       <button
                         className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#ff4f9a] to-[#ff79c1] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white shadow-[0_12px_22px_rgba(255,79,154,0.3)]"
                         type="button"
+                        onClick={openRateModal}
+                        disabled={commissionLoading}
                       >
                         Change rate
                       </button>
                       <button
                         className="inline-flex items-center justify-center rounded-full border border-[#ff6da6]/25 bg-white/85 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#a12d5d]"
                         type="button"
+                        onClick={openHistoryModal}
+                        disabled={commissionLoading}
                       >
                         View history
                       </button>
@@ -791,6 +937,179 @@ const AdminDashboard = () => {
                 </div>
               </div>
             )}
+
+            {isCommission && rateModalOpen ? (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2b0c1a]/40 px-4 py-8 backdrop-blur-sm">
+                <div className="w-full max-w-md rounded-[28px] border border-[#ff6da6]/25 bg-white/95 p-6 shadow-[0_28px_60px_rgba(255,88,150,0.28)]">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <span className="inline-flex items-center rounded-full border border-[#ff6da6]/25 bg-[#fff1f7] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a12d5d]">
+                        Update rate
+                      </span>
+                      <h2 className="mt-3 text-xl font-semibold text-[#4b0f29]">
+                        Change commission rate
+                      </h2>
+                      <p className="mt-2 text-sm text-[#6f3552]">
+                        Enter the new rate as a percent (for example, 5 for 5%).
+                      </p>
+                    </div>
+                    <button
+                      className="grid h-8 w-8 place-items-center rounded-full border border-[#ff6da6]/25 text-[#a12d5d] transition hover:bg-[#fff1f7]"
+                      type="button"
+                      onClick={closeRateModal}
+                      aria-label="Close rate modal"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        aria-hidden="true"
+                        focusable="false"
+                      >
+                        <path
+                          d="M6 6l12 12M18 6l-12 12"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="mt-4 rounded-2xl border border-[#ff6da6]/20 bg-[#fff5fa] p-4 text-sm text-[#6f3552]">
+                    <div className="flex items-center justify-between gap-3">
+                      <span>Current rate</span>
+                      <span className="font-semibold text-[#4b0f29]">
+                        {formatPercent(commissionRate)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-2">
+                    <label className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a3658]">
+                      New rate (%)
+                    </label>
+                    <input
+                      className="w-full rounded-full border border-[#ff6da6]/25 bg-white/90 px-4 py-2 text-sm font-semibold text-[#4b0f29] focus:outline-none focus:ring-2 focus:ring-[#ff79c1]/40"
+                      type="number"
+                      min="0"
+                      step="0.1"
+                      value={rateInput}
+                      onChange={(event) => setRateInput(event.target.value)}
+                      placeholder="e.g. 5"
+                    />
+                  </div>
+
+                  <div className="mt-6 flex flex-wrap gap-2">
+                    <button
+                      className="flex-1 rounded-full border border-[#ff6da6]/25 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#a12d5d] transition hover:bg-[#fff1f7]"
+                      type="button"
+                      onClick={closeRateModal}
+                      disabled={rateSaving}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      className="flex-1 rounded-full bg-gradient-to-r from-[#ff79c1] to-[#ff4f9a] px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-white shadow-[0_12px_20px_rgba(255,79,154,0.25)] transition hover:translate-y-[-1px]"
+                      type="button"
+                      onClick={handleSaveRate}
+                      disabled={rateSaving}
+                    >
+                      {rateSaving ? "Saving..." : "Save rate"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+
+            {isCommission && historyModalOpen ? (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2b0c1a]/40 px-4 py-8 backdrop-blur-sm">
+                <div className="w-full max-w-lg rounded-[28px] border border-[#ff6da6]/25 bg-white/95 p-6 shadow-[0_28px_60px_rgba(255,88,150,0.28)]">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <span className="inline-flex items-center rounded-full border border-[#ff6da6]/25 bg-[#fff1f7] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a12d5d]">
+                        Commission history
+                      </span>
+                      <h2 className="mt-3 text-xl font-semibold text-[#4b0f29]">
+                        Rate changes
+                      </h2>
+                      <p className="mt-2 text-sm text-[#6f3552]">
+                        Review past commission updates and who made them.
+                      </p>
+                    </div>
+                    <button
+                      className="grid h-8 w-8 place-items-center rounded-full border border-[#ff6da6]/25 text-[#a12d5d] transition hover:bg-[#fff1f7]"
+                      type="button"
+                      onClick={closeHistoryModal}
+                      aria-label="Close history modal"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="h-4 w-4"
+                        aria-hidden="true"
+                        focusable="false"
+                      >
+                        <path
+                          d="M6 6l12 12M18 6l-12 12"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="mt-5 max-h-[320px] overflow-y-auto pr-1">
+                    {commissionLoading ? (
+                      <div className="rounded-2xl border border-[#ff6da6]/20 bg-[#fff5fa] p-4 text-sm text-[#6f3552]">
+                        Loading history...
+                      </div>
+                    ) : commissionHistory.length ? (
+                      <div className="grid gap-3">
+                        {commissionHistory.map((item) => (
+                          <div
+                            key={item.id}
+                            className="rounded-2xl border border-[#ff6da6]/20 bg-white/95 p-4"
+                          >
+                            <div className="flex items-center justify-between gap-4">
+                              <div>
+                                <p className="text-sm font-semibold text-[#4b0f29]">
+                                  {formatPercent(item.rate)}
+                                </p>
+                                <p className="mt-1 text-xs text-[#7a3658]">
+                                  {formatDateTime(item.createdAt)}
+                                </p>
+                              </div>
+                              <div className="text-right text-xs text-[#7a3658]">
+                                <p className="font-semibold text-[#4b0f29]">
+                                  {item.createdBy?.name || "System"}
+                                </p>
+                                <p>{item.createdBy?.email || "-"}</p>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-[#ff6da6]/20 bg-[#fff5fa] p-4 text-sm text-[#6f3552]">
+                        No commission changes recorded yet.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="mt-6 flex justify-end">
+                    <button
+                      className="rounded-full border border-[#ff6da6]/25 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#a12d5d] transition hover:bg-[#fff1f7]"
+                      type="button"
+                      onClick={closeHistoryModal}
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : null}
           </main>
         </div>
       </div>
