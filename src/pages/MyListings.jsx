@@ -20,6 +20,7 @@ const statusTone = {
 };
 
 const categories = [
+  "Phones",
   "Electronics",
   "Furniture",
   "Fashion",

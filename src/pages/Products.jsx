@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
 
 const categories = [
   { value: "all", label: "All" },
+  { value: "Phones", label: "Phones" },
   { value: "Electronics", label: "Electronics" },
   { value: "Furniture", label: "Furniture" },
   { value: "Fashion", label: "Fashion" },
@@ -70,8 +71,10 @@ const RatingStars = ({ value }) => (
 const Products = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [locationText, setLocationText] = useState("");
   const [category, setCategory] = useState("all");
   const [condition, setCondition] = useState("all");
   const [minPrice, setMinPrice] = useState("");
@@ -97,6 +100,45 @@ const Products = () => {
   );
 
   useEffect(() => {
+    if (!location.search) {
+      return;
+    }
+    const params = new URLSearchParams(location.search);
+    const rawSearch = params.get("search") || "";
+    const rawCategory = params.get("category") || "all";
+    const rawLocation = params.get("location") || "";
+    const rawCondition = params.get("condition") || "all";
+    const rawMinPrice = params.get("minPrice") || "";
+    const rawMaxPrice = params.get("maxPrice") || "";
+    const rawSort = params.get("sort") || "newest";
+    const rawPage = params.get("page");
+
+    const nextCategory = categories.some((option) => option.value === rawCategory)
+      ? rawCategory
+      : "all";
+    const nextCondition = conditions.some((option) => option.value === rawCondition)
+      ? rawCondition
+      : "all";
+    const nextSort = sortOptions.some((option) => option.value === rawSort)
+      ? rawSort
+      : "newest";
+    const nextPage = Number.parseInt(rawPage, 10);
+
+    setSearch(rawSearch);
+    setLocationText(rawLocation);
+    setCategory(nextCategory);
+    setCondition(nextCondition);
+    setMinPrice(rawMinPrice);
+    setMaxPrice(rawMaxPrice);
+    setSort(nextSort);
+    if (Number.isFinite(nextPage) && nextPage > 0) {
+      setPage(nextPage);
+    } else {
+      setPage(1);
+    }
+  }, [location.search]);
+
+  useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search.trim());
     }, 400);
@@ -110,7 +152,7 @@ const Products = () => {
       return;
     }
     setPage((prev) => (prev === 1 ? prev : 1));
-  }, [category, condition, debouncedSearch, maxPrice, minPrice, sort]);
+  }, [category, condition, debouncedSearch, locationText, maxPrice, minPrice, sort]);
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -128,6 +170,9 @@ const Products = () => {
         const params = new URLSearchParams();
         if (debouncedSearch) {
           params.set("search", debouncedSearch);
+        }
+        if (locationText.trim()) {
+          params.set("location", locationText.trim());
         }
         if (category !== "all") {
           params.set("category", category);
@@ -183,7 +228,18 @@ const Products = () => {
       isActive = false;
       controller.abort();
     };
-  }, [apiBase, category, condition, debouncedSearch, maxPrice, minPrice, page, pageSize, sort]);
+  }, [
+    apiBase,
+    category,
+    condition,
+    debouncedSearch,
+    locationText,
+    maxPrice,
+    minPrice,
+    page,
+    pageSize,
+    sort
+  ]);
 
   useEffect(() => {
     if (!user) {
@@ -232,6 +288,9 @@ const Products = () => {
 
   const categoryLabel =
     categories.find((option) => option.value === category)?.label || "All";
+  const locationLabel = locationText.trim()
+    ? `Location: ${locationText.trim()}`
+    : "Any location";
   const conditionLabel =
     conditions.find((option) => option.value === condition)?.label ||
     "All conditions";
@@ -250,6 +309,7 @@ const Products = () => {
       : "Any price";
   const hasFilters =
     debouncedSearch ||
+    locationText.trim() ||
     category !== "all" ||
     condition !== "all" ||
     minPrice ||
@@ -257,6 +317,7 @@ const Products = () => {
     sort !== "newest";
   const filterChips = [
     debouncedSearch ? `Search: "${debouncedSearch}"` : "All listings",
+    locationLabel,
     category !== "all" ? `Category: ${categoryLabel}` : "All categories",
     condition !== "all" ? `Condition: ${conditionLabel}` : "Any condition",
     priceLabel,
@@ -286,6 +347,7 @@ const Products = () => {
 
   const clearFilters = () => {
     setSearch("");
+    setLocationText("");
     setCategory("all");
     setCondition("all");
     setMinPrice("");
@@ -429,6 +491,17 @@ const Products = () => {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search by name, tag, or category"
+              />
+            </div>
+
+            <div className="filter-group">
+              <label htmlFor="location">Location</label>
+              <input
+                id="location"
+                type="text"
+                value={locationText}
+                onChange={(event) => setLocationText(event.target.value)}
+                placeholder="City or area"
               />
             </div>
 

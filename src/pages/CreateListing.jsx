@@ -5,6 +5,7 @@ import UserSidebar from "../components/UserSidebar";
 
 const emptyAttribute = { key: "", value: "" };
 const categories = [
+  "Phones",
   "Electronics",
   "Furniture",
   "Fashion",

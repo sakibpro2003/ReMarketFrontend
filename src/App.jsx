@@ -6,6 +6,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminBlogs from "./pages/AdminBlogs";
 import AdminComplaints from "./pages/AdminComplaints";
+import AdminHomeImages from "./pages/AdminHomeImages";
 import AdminListingDetails from "./pages/AdminListingDetails";
 import AdminListings from "./pages/AdminListings";
 import AdminOrphanListings from "./pages/AdminOrphanListings";
@@ -181,6 +182,18 @@ const App = () => {
               <Navigate to="/login" replace />
             ) : isAdmin ? (
               <AdminBlogs />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/admin/home-images"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <AdminHomeImages />
             ) : (
               <Navigate to="/" replace />
             )

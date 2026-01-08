@@ -87,6 +87,9 @@ const AdminSidebar = () => {
           <NavLink className={linkClass} to="/admin/blogs">
             Blogs
           </NavLink>
+          <NavLink className={linkClass} to="/admin/home-images">
+            Home images
+          </NavLink>
           <NavLink className={linkClass} to="/admin/commission">
             Commission
           </NavLink>
