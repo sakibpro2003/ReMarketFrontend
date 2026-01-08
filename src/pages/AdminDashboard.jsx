@@ -610,18 +610,26 @@ const AdminDashboard = () => {
                           Submissions
                         </p>
                         <h2 className="mt-2 text-lg font-semibold text-[#4b0f29]">
-                          Recent listings
+                          Recent submissions
                         </h2>
                         <p className="mt-2 text-sm text-[#6f3552]">
-                          Review new submissions and message sellers.
+                          Review new listings and blog requests.
                         </p>
                       </div>
-                      <Link
-                        className="inline-flex items-center justify-center rounded-full border border-[#ff6da6]/25 bg-white/85 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#a12d5d]"
-                        to="/admin/listings"
-                      >
-                        Open queue
-                      </Link>
+                      <div className="flex flex-wrap gap-2">
+                        <Link
+                          className="inline-flex items-center justify-center rounded-full border border-[#ff6da6]/25 bg-white/85 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#a12d5d]"
+                          to="/admin/listings"
+                        >
+                          Listings queue
+                        </Link>
+                        <Link
+                          className="inline-flex items-center justify-center rounded-full border border-[#ff6da6]/25 bg-white/85 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] text-[#a12d5d]"
+                          to="/admin/blogs"
+                        >
+                          Blog queue
+                        </Link>
+                      </div>
                     </div>
                     <div className="mt-4 grid gap-3">
                       {notifications.length ? (
@@ -634,7 +642,8 @@ const AdminDashboard = () => {
                               {item.message}
                             </p>
                             <p className="mt-1 text-xs text-[#7a3658]">
-                              Seller: {item.sellerName}
+                              {item.submitterLabel || "Submitter"}:{" "}
+                              {item.submitterName || item.sellerName || "Unknown"}
                             </p>
                           </div>
                         ))
@@ -668,6 +677,12 @@ const AdminDashboard = () => {
                         to="/admin/listings"
                       >
                         Review listings
+                      </Link>
+                      <Link
+                        className="inline-flex items-center justify-center rounded-full border border-[#ff6da6]/25 bg-white/85 px-4 py-2 text-sm font-semibold text-[#a12d5d]"
+                        to="/admin/blogs"
+                      >
+                        Review blogs
                       </Link>
                       <Link
                         className="inline-flex items-center justify-center rounded-full border border-[#ff6da6]/25 bg-white/85 px-4 py-2 text-sm font-semibold text-[#a12d5d]"

@@ -4,10 +4,14 @@ import { ToastContainer } from "react-toastify";
 import { useAuth } from "./auth/AuthContext";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminAnalytics from "./pages/AdminAnalytics";
+import AdminBlogs from "./pages/AdminBlogs";
+import AdminComplaints from "./pages/AdminComplaints";
 import AdminListingDetails from "./pages/AdminListingDetails";
 import AdminListings from "./pages/AdminListings";
 import AdminOrphanListings from "./pages/AdminOrphanListings";
 import AdminUsers from "./pages/AdminUsers";
+import BlogDetails from "./pages/BlogDetails";
+import Blogs from "./pages/Blogs";
 import CreateListing from "./pages/CreateListing";
 import Checkout from "./pages/Checkout";
 import Home from "./pages/Home";
@@ -17,6 +21,7 @@ import ProductDetails from "./pages/ProductDetails";
 import Products from "./pages/Products";
 import Register from "./pages/Register";
 import UserDashboard from "./pages/UserDashboard";
+import UserBlogs from "./pages/UserBlogs";
 import Wishlist from "./pages/Wishlist";
 
 const App = () => {
@@ -86,6 +91,18 @@ const App = () => {
           }
         />
         <Route
+          path="/dashboard/blogs"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <Navigate to="/admin" replace />
+            ) : (
+              <UserBlogs />
+            )
+          }
+        />
+        <Route
           path="/dashboard/orders"
           element={
             !user ? (
@@ -99,6 +116,18 @@ const App = () => {
         />
         <Route
           path="/dashboard/profile"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <Navigate to="/admin" replace />
+            ) : (
+              <UserDashboard />
+            )
+          }
+        />
+        <Route
+          path="/dashboard/complaints"
           element={
             !user ? (
               <Navigate to="/login" replace />
@@ -134,6 +163,30 @@ const App = () => {
           }
         />
         <Route
+          path="/admin/complaints"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <AdminComplaints />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/admin/blogs"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <AdminBlogs />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
         path="/admin/listings"
         element={
           !user ? (
@@ -159,6 +212,8 @@ const App = () => {
         />
         <Route path="/products" element={<Products />} />
         <Route path="/products/:id" element={<ProductDetails />} />
+        <Route path="/blogs" element={<Blogs />} />
+        <Route path="/blogs/:id" element={<BlogDetails />} />
         <Route path="/checkout/:id" element={<Checkout />} />
         <Route
           path="/wishlist"

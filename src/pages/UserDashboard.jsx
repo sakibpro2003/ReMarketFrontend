@@ -22,7 +22,9 @@ const UserDashboard = () => {
   const isListings = pathname.startsWith("/dashboard/listings");
   const isOrders = pathname.startsWith("/dashboard/orders");
   const isProfile = pathname.startsWith("/dashboard/profile");
-  const isOverview = !isListings && !isOrders && !isProfile;
+  const isComplaints = pathname.startsWith("/dashboard/complaints");
+  const isOverview =
+    !isListings && !isOrders && !isProfile && !isComplaints;
   const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
   const [orderNotifications, setOrderNotifications] = React.useState([]);
   const [orderUnreadCount, setOrderUnreadCount] = React.useState(0);
@@ -44,6 +46,17 @@ const UserDashboard = () => {
   });
   const [profileSaving, setProfileSaving] = React.useState(false);
   const [uploadingAvatar, setUploadingAvatar] = React.useState(false);
+  const [complaints, setComplaints] = React.useState([]);
+  const [complaintsLoading, setComplaintsLoading] = React.useState(false);
+  const [complaintForm, setComplaintForm] = React.useState({
+    subject: "",
+    message: "",
+    productId: "",
+    imageUrl: ""
+  });
+  const [complaintSaving, setComplaintSaving] = React.useState(false);
+  const [uploadingComplaintImage, setUploadingComplaintImage] =
+    React.useState(false);
 
   React.useEffect(() => {
     if (!isOrders) {
@@ -129,6 +142,39 @@ const UserDashboard = () => {
     });
   }, [user]);
 
+  React.useEffect(() => {
+    if (!isComplaints) {
+      return;
+    }
+
+    const loadComplaints = async () => {
+      try {
+        setComplaintsLoading(true);
+        const token = localStorage.getItem("remarket_token");
+        const response = await fetch(`${apiBase}/api/complaints/mine`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data?.error || "Failed to load complaints");
+        }
+
+        setComplaints(data.complaints || []);
+      } catch (error) {
+        toast.error(error.message || "Failed to load complaints", {
+          toastId: "complaints-load",
+        });
+      } finally {
+        setComplaintsLoading(false);
+      }
+    };
+
+    loadComplaints();
+  }, [apiBase, isComplaints]);
+
   const header = isListings
     ? {
         badge: "Listings",
@@ -146,6 +192,12 @@ const UserDashboard = () => {
         badge: "Profile",
         title: "Update your profile",
         subtitle: "Keep your details accurate for buyers.",
+      }
+    : isComplaints
+    ? {
+        badge: "Complaints",
+        title: "Report an issue",
+        subtitle: "Share details and screenshots for faster support.",
       }
     : {
         badge: "Overview",
@@ -177,7 +229,7 @@ const UserDashboard = () => {
     setProfileForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const uploadAvatar = async (file) => {
+  const uploadImage = async (file) => {
     const token = localStorage.getItem("remarket_token");
     const formData = new FormData();
     formData.append("file", file);
@@ -197,6 +249,8 @@ const UserDashboard = () => {
 
     return data;
   };
+
+  const uploadAvatar = async (file) => uploadImage(file);
 
   const handleAvatarSelection = async (event) => {
     const file = event.target.files?.[0];
@@ -264,6 +318,111 @@ const UserDashboard = () => {
     }
   };
 
+  const normalizeProductId = (value) => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return "";
+    }
+    const match = trimmed.match(/[a-f0-9]{24}/i);
+    return match ? match[0] : trimmed;
+  };
+
+  const handleComplaintChange = (event) => {
+    const { name, value } = event.target;
+    setComplaintForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleComplaintImageSelection = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+    setUploadingComplaintImage(true);
+    try {
+      const uploaded = await uploadImage(file);
+      setComplaintForm((prev) => ({ ...prev, imageUrl: uploaded.url }));
+      toast.success("Evidence image uploaded.");
+    } catch (error) {
+      toast.error(error.message || "Failed to upload image", {
+        toastId: "complaint-image-upload",
+      });
+    } finally {
+      setUploadingComplaintImage(false);
+      event.target.value = "";
+    }
+  };
+
+  const clearComplaintImage = () => {
+    setComplaintForm((prev) => ({ ...prev, imageUrl: "" }));
+  };
+
+  const handleComplaintSubmit = async (event) => {
+    event.preventDefault();
+    if (!user) {
+      return;
+    }
+
+    const subject = complaintForm.subject.trim();
+    const message = complaintForm.message.trim();
+    const productId = normalizeProductId(complaintForm.productId);
+
+    if (!subject) {
+      toast.error("Subject is required.", { toastId: "complaint-subject" });
+      return;
+    }
+    if (!message) {
+      toast.error("Message is required.", { toastId: "complaint-message" });
+      return;
+    }
+    if (productId && !/^[a-f0-9]{24}$/i.test(productId)) {
+      toast.error("Product id is invalid.", { toastId: "complaint-product" });
+      return;
+    }
+
+    try {
+      setComplaintSaving(true);
+      const token = localStorage.getItem("remarket_token");
+      const payload = {
+        subject,
+        message,
+      };
+      if (productId) {
+        payload.productId = productId;
+      }
+      if (complaintForm.imageUrl) {
+        payload.imageUrl = complaintForm.imageUrl;
+      }
+
+      const response = await fetch(`${apiBase}/api/complaints`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "Failed to submit complaint");
+      }
+
+      setComplaintForm({
+        subject: "",
+        message: "",
+        productId: "",
+        imageUrl: "",
+      });
+      setComplaints((prev) => [data.complaint, ...prev]);
+      toast.success("Complaint submitted.", { toastId: "complaint-sent" });
+    } catch (error) {
+      toast.error(error.message || "Failed to submit complaint", {
+        toastId: "complaint-error",
+      });
+    } finally {
+      setComplaintSaving(false);
+    }
+  };
+
   return (
     <div className="page page-stack">
       <div className="app-shell">
@@ -272,7 +431,7 @@ const UserDashboard = () => {
 
           <main
             className={`content-area ${
-              isListings || isOrders || isProfile
+              isListings || isOrders || isProfile || isComplaints
                 ? "bg-[#fff8fb] border border-[#ff6da6]/20 shadow-[0_24px_48px_rgba(255,88,150,0.16)]"
                 : ""
             }`}
@@ -388,7 +547,7 @@ const UserDashboard = () => {
               </>
             ) : (
               <>
-                {!isListings && !isOrders && !isProfile && (
+                {!isListings && !isOrders && !isProfile && !isComplaints && (
                   <div className="content-header">
                     <div>
                       <span className="badge">{header.badge}</span>
@@ -1088,6 +1247,278 @@ const UserDashboard = () => {
                             >
                               View orders
                             </Link>
+                          </div>
+                        </div>
+                      </aside>
+                    </div>
+                  </div>
+                ) : isComplaints ? (
+                  <div className="grid gap-6">
+                    <div className="rounded-[28px] border border-[#ff6da6]/25 bg-gradient-to-br from-[#fff2f8] via-[#ffe3ef] to-[#fff9fd] p-6 shadow-[0_24px_48px_rgba(255,88,150,0.2)] animate-[hero-fade_0.5s_ease_both]">
+                      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                        <div>
+                          <span className="inline-flex items-center gap-2 rounded-full border border-[#ff6da6]/25 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a12d5d]">
+                            Complaints
+                          </span>
+                          <h2 className="mt-3 text-2xl font-semibold text-[#4b0f29] md:text-3xl">
+                            Report an issue
+                          </h2>
+                          <p className="mt-2 max-w-xl text-sm text-[#6f3552]">
+                            Share details and screenshots so the team can help
+                            quickly.
+                          </p>
+                          <div className="mt-4 flex flex-wrap gap-2">
+                            <Link
+                              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#ff4f9a] to-[#ff79c1] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_24px_rgba(255,79,154,0.35)]"
+                              to="/dashboard/orders"
+                            >
+                              View orders
+                            </Link>
+                            <Link
+                              className="inline-flex items-center justify-center rounded-full border border-[#ff6da6]/25 bg-white/85 px-4 py-2 text-sm font-semibold text-[#a12d5d]"
+                              to="/"
+                            >
+                              Home
+                            </Link>
+                          </div>
+                        </div>
+                        <div className="rounded-2xl border border-[#ff6da6]/20 bg-white/80 p-4 shadow-[0_16px_32px_rgba(255,88,150,0.14)]">
+                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a3658]">
+                            Status snapshot
+                          </p>
+                          <div className="mt-3 grid gap-2 text-sm text-[#6f3552]">
+                            <div className="flex items-center justify-between gap-4">
+                              <span>Open</span>
+                              <span className="font-semibold text-[#4b0f29]">
+                                {complaints.filter((item) => item.status === "open").length}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-4">
+                              <span>Replied</span>
+                              <span className="font-semibold text-[#4b0f29]">
+                                {complaints.filter((item) => item.status === "replied").length}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between gap-4">
+                              <span>Total</span>
+                              <span className="font-semibold text-[#4b0f29]">
+                                {complaints.length}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+                      <form
+                        className="grid gap-6"
+                        onSubmit={handleComplaintSubmit}
+                      >
+                        <section className="rounded-3xl border border-[#ff6da6]/20 bg-white/90 p-6 shadow-[0_20px_40px_rgba(255,88,150,0.12)]">
+                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a3658]">
+                            Step 1
+                          </p>
+                          <h3 className="mt-2 text-lg font-semibold text-[#4b0f29]">
+                            Complaint details
+                          </h3>
+                          <div className="mt-4 grid gap-4">
+                            <div>
+                              <label
+                                htmlFor="complaint-subject"
+                                className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a3658]"
+                              >
+                                Subject
+                              </label>
+                              <input
+                                id="complaint-subject"
+                                name="subject"
+                                type="text"
+                                value={complaintForm.subject}
+                                onChange={handleComplaintChange}
+                                className="mt-2 w-full rounded-xl border border-[#ff6da6]/25 bg-white/90 px-3 py-2 text-sm text-[#4b0f29] focus:outline-none focus:ring-2 focus:ring-[#ff79c1]/40"
+                                placeholder="Short summary of the issue"
+                              />
+                            </div>
+                            <div>
+                              <label
+                                htmlFor="complaint-product"
+                                className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a3658]"
+                              >
+                                Product ID or link (optional)
+                              </label>
+                              <input
+                                id="complaint-product"
+                                name="productId"
+                                type="text"
+                                value={complaintForm.productId}
+                                onChange={handleComplaintChange}
+                                className="mt-2 w-full rounded-xl border border-[#ff6da6]/25 bg-white/90 px-3 py-2 text-sm text-[#4b0f29] focus:outline-none focus:ring-2 focus:ring-[#ff79c1]/40"
+                                placeholder="Paste the product link or id"
+                              />
+                            </div>
+                            <div>
+                              <label
+                                htmlFor="complaint-message"
+                                className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a3658]"
+                              >
+                                Details
+                              </label>
+                              <textarea
+                                id="complaint-message"
+                                name="message"
+                                rows="5"
+                                value={complaintForm.message}
+                                onChange={handleComplaintChange}
+                                className="mt-2 w-full rounded-2xl border border-[#ff6da6]/25 bg-white/90 p-3 text-sm text-[#4b0f29] focus:outline-none focus:ring-2 focus:ring-[#ff79c1]/40"
+                                placeholder="Describe what happened and any order details."
+                              />
+                            </div>
+                          </div>
+                        </section>
+
+                        <section className="rounded-3xl border border-[#ff6da6]/20 bg-white/90 p-6 shadow-[0_20px_40px_rgba(255,88,150,0.12)]">
+                          <div className="flex flex-wrap items-center justify-between gap-4">
+                            <div>
+                              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a3658]">
+                                Step 2
+                              </p>
+                              <h3 className="mt-2 text-lg font-semibold text-[#4b0f29]">
+                                Evidence upload
+                              </h3>
+                              <p className="mt-1 text-sm text-[#6f3552]">
+                                Upload a screenshot or product photo.
+                              </p>
+                            </div>
+                            <label
+                              htmlFor="complaint-image"
+                              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#ff4f9a] to-[#ff79c1] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_24px_rgba(255,79,154,0.35)]"
+                            >
+                              {uploadingComplaintImage
+                                ? "Uploading..."
+                                : "Upload image"}
+                            </label>
+                            <input
+                              id="complaint-image"
+                              type="file"
+                              accept="image/*"
+                              onChange={handleComplaintImageSelection}
+                              disabled={uploadingComplaintImage || complaintSaving}
+                              className="hidden"
+                            />
+                          </div>
+                          <div className="mt-4 flex flex-wrap items-center gap-4">
+                            <div className="grid h-20 w-20 place-items-center overflow-hidden rounded-2xl border border-[#ff6da6]/25 bg-[#fff1f7] text-xs font-semibold text-[#a12d5d]">
+                              {complaintForm.imageUrl ? (
+                                <img
+                                  src={complaintForm.imageUrl}
+                                  alt="Complaint evidence"
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <span>No image</span>
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-[#4b0f29]">
+                                {complaintForm.imageUrl
+                                  ? "Image attached"
+                                  : "No image yet"}
+                              </p>
+                              <p className="mt-1 text-xs text-[#7a3658]">
+                                PNG, JPG up to 5MB
+                              </p>
+                            </div>
+                            {complaintForm.imageUrl ? (
+                              <button
+                                type="button"
+                                className="inline-flex items-center justify-center rounded-full border border-[#ff6da6]/25 bg-white/85 px-3 py-1 text-xs font-semibold text-[#a12d5d]"
+                                onClick={clearComplaintImage}
+                              >
+                                Remove image
+                              </button>
+                            ) : null}
+                          </div>
+                        </section>
+
+                        <button
+                          className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#ff4f9a] to-[#ff79c1] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_24px_rgba(255,79,154,0.35)]"
+                          type="submit"
+                          disabled={complaintSaving}
+                        >
+                          {complaintSaving ? "Submitting..." : "Submit complaint"}
+                        </button>
+                      </form>
+
+                      <aside className="grid h-fit gap-4 lg:sticky lg:top-6">
+                        <div className="rounded-3xl border border-[#ff6da6]/20 bg-white/90 p-5 shadow-[0_20px_40px_rgba(255,88,150,0.12)]">
+                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a3658]">
+                            Recent complaints
+                          </p>
+                          <div className="mt-4 grid gap-3">
+                            {complaintsLoading ? (
+                              <div className="rounded-2xl border border-[#ff6da6]/20 bg-[#fff5fa] p-4 text-sm text-[#6f3552]">
+                                Loading complaints...
+                              </div>
+                            ) : complaints.length ? (
+                              complaints.map((complaint) => (
+                                <div
+                                  key={complaint.id}
+                                  className="rounded-2xl border border-[#ff6da6]/20 bg-white/95 p-4 text-sm text-[#6f3552]"
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                      <p className="text-sm font-semibold text-[#4b0f29]">
+                                        {complaint.subject}
+                                      </p>
+                                      <p className="mt-1 text-xs text-[#7a3658]">
+                                        {formatDate(complaint.createdAt)}
+                                      </p>
+                                    </div>
+                                    <span className="inline-flex items-center rounded-full border border-[#ff6da6]/25 bg-white/85 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.15em] text-[#a12d5d]">
+                                      {complaint.status}
+                                    </span>
+                                  </div>
+                                  {complaint.product ? (
+                                    <p className="mt-2 text-xs text-[#7a3658]">
+                                      Product: {complaint.product.title}
+                                    </p>
+                                  ) : null}
+                                  {complaint.imageUrl ? (
+                                    <a
+                                      className="mt-2 inline-flex text-xs font-semibold text-[#a12d5d] underline"
+                                      href={complaint.imageUrl}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                    >
+                                      View image
+                                    </a>
+                                  ) : null}
+                                  <p className="mt-2 text-xs text-[#7a3658]">
+                                    {complaint.message}
+                                  </p>
+                                  {complaint.adminReply?.message ? (
+                                    <div className="mt-3 rounded-xl border border-[#ff6da6]/15 bg-[#fff5fa] p-3 text-xs text-[#6f3552]">
+                                      <p className="font-semibold text-[#4b0f29]">
+                                        Admin reply
+                                      </p>
+                                      <p className="mt-1">
+                                        {complaint.adminReply.message}
+                                      </p>
+                                      {complaint.adminReply.repliedAt ? (
+                                        <p className="mt-2 text-[11px] text-[#7a3658]">
+                                          {formatDate(complaint.adminReply.repliedAt)}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                  ) : null}
+                                </div>
+                              ))
+                            ) : (
+                              <div className="rounded-2xl border border-[#ff6da6]/20 bg-[#fff5fa] p-4 text-sm text-[#6f3552]">
+                                No complaints submitted yet.
+                              </div>
+                            )}
                           </div>
                         </div>
                       </aside>

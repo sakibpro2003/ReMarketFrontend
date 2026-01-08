@@ -73,8 +73,14 @@ const UserSidebar = () => {
         <NavLink className={linkClass} to="/dashboard/listings">
           Listings
         </NavLink>
+        <NavLink className={linkClass} to="/dashboard/blogs">
+          Blogs
+        </NavLink>
         <NavLink className={linkClass} to="/dashboard/orders">
           Orders
+        </NavLink>
+        <NavLink className={linkClass} to="/dashboard/complaints">
+          Complaints
         </NavLink>
         <NavLink className={linkClass} to="/dashboard/profile">
           Profile
