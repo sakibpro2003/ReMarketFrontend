@@ -40,6 +40,33 @@ const conditionLabels = {
   fair: "Fair"
 };
 
+const Star = ({ filled }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className="h-3.5 w-3.5"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path
+      d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8-5.3-2.8-5.3 2.8 1-5.8-4.2-4.1 5.9-.9L12 3.5z"
+      fill={filled ? "currentColor" : "none"}
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
+const RatingStars = ({ value }) => (
+  <div className="flex items-center gap-1 text-[#ff4f9a]">
+    {[1, 2, 3, 4, 5].map((star) => (
+      <span key={star}>
+        <Star filled={star <= Math.round(value || 0)} />
+      </span>
+    ))}
+  </div>
+);
+
 const Products = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -514,8 +541,13 @@ const Products = () => {
             ) : products.length ? (
               <>
                 <div className="products-grid">
-                  {products.map((product) => (
-                    <div key={product._id} className="product-card">
+                  {products.map((product) => {
+                    const isSold =
+                      product.status === "sold" || product.quantity <= 0;
+                    const ratingAverage = product.ratingAverage || 0;
+                    const ratingCount = product.ratingCount || 0;
+                    return (
+                      <div key={product._id} className="product-card">
                       <div className="product-card-media">
                         <button
                           type="button"
@@ -556,6 +588,11 @@ const Products = () => {
                           <span className="product-pill product-pill-outline">
                             {conditionLabels[product.condition] || "Condition"}
                           </span>
+                          {isSold ? (
+                            <span className="product-pill bg-[#ff4f9a] text-white">
+                              Sold
+                            </span>
+                          ) : null}
                         </div>
                       </div>
                       <div className="product-info">
@@ -566,6 +603,14 @@ const Products = () => {
                               {product.category} ·{" "}
                               {conditionLabels[product.condition] || "Condition"}
                             </p>
+                            <div className="mt-2 flex items-center gap-2 text-xs text-[#7a3658]">
+                              <RatingStars value={ratingAverage} />
+                              <span>
+                                {ratingCount
+                                  ? `${ratingAverage.toFixed(1)} (${ratingCount})`
+                                  : "No reviews"}
+                              </span>
+                            </div>
                           </div>
                           <span className="product-price-tag">
                             BDT {formatPrice(product.price)}
@@ -574,7 +619,7 @@ const Products = () => {
                         <div className="product-meta-row">
                           <span className="product-location">{product.location}</span>
                           <span className="product-stock">
-                            {product.quantity} left
+                            {isSold ? "Sold out" : `${product.quantity} left`}
                           </span>
                           {product.negotiable ? (
                             <span className="product-chip">Negotiable</span>
@@ -589,8 +634,9 @@ const Products = () => {
                           </Link>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                      </div>
+                    );
+                  })}
                 </div>
                 {totalPages > 1 ? (
                   <div className="pagination pagination-market">
