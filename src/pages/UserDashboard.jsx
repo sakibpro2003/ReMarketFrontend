@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../auth/AuthContext";
@@ -414,7 +414,8 @@ const UserDashboard = () => {
                             Manage your catalog
                           </h2>
                           <p className="mt-2 max-w-xl text-sm text-[#6f3552]">
-                            Track approvals, tune pricing, and highlight your best items.
+                            Track approvals, tune pricing, and highlight your
+                            best items.
                           </p>
                           <div className="mt-4 flex flex-wrap gap-2">
                             <Link
@@ -449,15 +450,21 @@ const UserDashboard = () => {
                           <div className="mt-3 grid gap-2 text-sm text-[#6f3552]">
                             <div className="flex items-start gap-2">
                               <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#ff4f9a]" />
-                              <span>Refresh titles, photos, and price points.</span>
+                              <span>
+                                Refresh titles, photos, and price points.
+                              </span>
                             </div>
                             <div className="flex items-start gap-2">
                               <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#ff79c1]" />
-                              <span>Confirm pickup details and availability.</span>
+                              <span>
+                                Confirm pickup details and availability.
+                              </span>
                             </div>
                             <div className="flex items-start gap-2">
                               <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#ff4f9a]" />
-                              <span>Reply to buyer questions within the hour.</span>
+                              <span>
+                                Reply to buyer questions within the hour.
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -701,7 +708,9 @@ const UserDashboard = () => {
                           <div className="mt-3 grid gap-2 text-sm text-[#6f3552]">
                             <div className="flex items-start gap-2">
                               <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#ff79c1]" />
-                              <span>Submit for approval and wait for review.</span>
+                              <span>
+                                Submit for approval and wait for review.
+                              </span>
                             </div>
                             <div className="flex items-start gap-2">
                               <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#ff4f9a]" />
@@ -826,7 +835,9 @@ const UserDashboard = () => {
                               htmlFor="profile-image"
                               className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#ff4f9a] to-[#ff79c1] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_24px_rgba(255,79,154,0.35)]"
                             >
-                              {uploadingAvatar ? "Uploading..." : "Upload photo"}
+                              {uploadingAvatar
+                                ? "Uploading..."
+                                : "Upload photo"}
                             </label>
                             <input
                               id="profile-image"
@@ -1095,7 +1106,8 @@ const UserDashboard = () => {
                               Track orders and payouts
                             </h2>
                             <p className="mt-2 max-w-xl text-sm text-[#6f3552]">
-                              Stay on top of new sales, delivery handoffs, and earnings.
+                              Stay on top of new sales, delivery handoffs, and
+                              earnings.
                             </p>
                             <div className="mt-4 flex flex-wrap gap-2">
                               <Link
@@ -1119,7 +1131,8 @@ const UserDashboard = () => {
                                 Total orders: {transactionSummary.totalOrders}
                               </span>
                               <span className="inline-flex items-center rounded-full border border-[#ff6da6]/25 bg-white/85 px-3 py-1 text-xs font-semibold text-[#a12d5d]">
-                                Gross: BDT {formatPrice(transactionSummary.totalGross)}
+                                Gross: BDT{" "}
+                                {formatPrice(transactionSummary.totalGross)}
                               </span>
                             </div>
                           </div>
@@ -1130,15 +1143,21 @@ const UserDashboard = () => {
                             <div className="mt-3 grid gap-2 text-sm text-[#6f3552]">
                               <div className="flex items-start gap-2">
                                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#ff4f9a]" />
-                                <span>Respond quickly to new buyer messages.</span>
+                                <span>
+                                  Respond quickly to new buyer messages.
+                                </span>
                               </div>
                               <div className="flex items-start gap-2">
                                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#ff79c1]" />
-                                <span>Confirm handoff details within 24 hours.</span>
+                                <span>
+                                  Confirm handoff details within 24 hours.
+                                </span>
                               </div>
                               <div className="flex items-start gap-2">
                                 <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#ff4f9a]" />
-                                <span>Track payouts after delivery completion.</span>
+                                <span>
+                                  Track payouts after delivery completion.
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -1170,7 +1189,8 @@ const UserDashboard = () => {
                                   Total sales
                                 </p>
                                 <p className="mt-3 text-2xl font-semibold text-[#4b0f29]">
-                                  BDT {formatPrice(transactionSummary.totalSales)}
+                                  BDT{" "}
+                                  {formatPrice(transactionSummary.totalSales)}
                                 </p>
                                 <span className="text-xs text-[#7a3658]">
                                   {transactionSummary.totalOrders} orders
@@ -1181,7 +1201,10 @@ const UserDashboard = () => {
                                   Commission
                                 </p>
                                 <p className="mt-3 text-2xl font-semibold text-[#4b0f29]">
-                                  BDT {formatPrice(transactionSummary.totalCommission)}
+                                  BDT{" "}
+                                  {formatPrice(
+                                    transactionSummary.totalCommission
+                                  )}
                                 </p>
                                 <span className="text-xs text-[#7a3658]">
                                   Platform fee
@@ -1192,7 +1215,8 @@ const UserDashboard = () => {
                                   Buyer total
                                 </p>
                                 <p className="mt-3 text-2xl font-semibold text-[#4b0f29]">
-                                  BDT {formatPrice(transactionSummary.totalGross)}
+                                  BDT{" "}
+                                  {formatPrice(transactionSummary.totalGross)}
                                 </p>
                                 <span className="text-xs text-[#7a3658]">
                                   Gross volume
@@ -1283,7 +1307,9 @@ const UserDashboard = () => {
                                         </div>
                                       </div>
                                       <div className="text-right text-xs text-[#7a3658]">
-                                        <p className="font-semibold text-[#4b0f29]">Order</p>
+                                        <p className="font-semibold text-[#4b0f29]">
+                                          Order
+                                        </p>
                                         <p>{formatDate(item.createdAt)}</p>
                                       </div>
                                     </div>
@@ -1297,7 +1323,8 @@ const UserDashboard = () => {
                                       <div className="flex items-center justify-between gap-2 rounded-xl border border-[#ff6da6]/15 bg-[#fff5fa] px-3 py-2">
                                         <span>Platform fee</span>
                                         <span className="font-semibold text-[#4b0f29]">
-                                          BDT {formatPrice(item.commissionAmount)}
+                                          BDT{" "}
+                                          {formatPrice(item.commissionAmount)}
                                         </span>
                                       </div>
                                       <div className="flex items-center justify-between gap-2 rounded-xl border border-[#ff6da6]/15 bg-[#fff5fa] px-3 py-2">
@@ -1325,7 +1352,10 @@ const UserDashboard = () => {
                             </p>
                             <div className="mt-3 grid gap-2 text-sm text-[#6f3552]">
                               {orderSteps.map((step, index) => (
-                                <div key={step} className="flex items-start gap-2">
+                                <div
+                                  key={step}
+                                  className="flex items-start gap-2"
+                                >
                                   <span className="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#ff6da6]/25 bg-[#fff1f7] text-[10px] font-semibold text-[#a12d5d]">
                                     {index + 1}
                                   </span>
@@ -1341,7 +1371,10 @@ const UserDashboard = () => {
                             </p>
                             <div className="mt-3 grid gap-2 text-sm text-[#6f3552]">
                               {handoffChecklist.map((item, index) => (
-                                <div key={item} className="flex items-start gap-2">
+                                <div
+                                  key={item}
+                                  className="flex items-start gap-2"
+                                >
                                   <span className="mt-1 inline-flex h-5 w-5 items-center justify-center rounded-full border border-[#ff6da6]/25 bg-[#fff1f7] text-[10px] font-semibold text-[#a12d5d]">
                                     {index + 1}
                                   </span>
@@ -1394,5 +1427,3 @@ const UserDashboard = () => {
 };
 
 export default UserDashboard;
-
-

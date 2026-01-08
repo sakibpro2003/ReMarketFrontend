@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import { useAuth } from "./auth/AuthContext";
 import AdminDashboard from "./pages/AdminDashboard";
+import AdminAnalytics from "./pages/AdminAnalytics";
 import AdminListingDetails from "./pages/AdminListingDetails";
 import AdminListings from "./pages/AdminListings";
 import AdminOrphanListings from "./pages/AdminOrphanListings";
@@ -115,6 +116,18 @@ const App = () => {
               <Navigate to="/login" replace />
             ) : isAdmin ? (
               <AdminDashboard />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/admin/analytics"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <AdminAnalytics />
             ) : (
               <Navigate to="/" replace />
             )
