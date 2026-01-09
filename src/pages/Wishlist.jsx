@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const conditionLabels = {
   new: "New",
@@ -276,6 +277,7 @@ const Wishlist = () => {
             </div>
           )}
         </section>
+        <Footer />
       </div>
     </div>
   );

@@ -30,26 +30,7 @@ const AdminSidebar = () => {
           </span>
           ReMarket
         </Link>
-        <Link
-          className="inline-flex items-center gap-2 rounded-full border border-[#ff6da6]/25 bg-white/80 px-2.5 py-1 text-xs font-semibold text-[#a12d5d] shadow-[0_8px_16px_rgba(255,88,150,0.12)]"
-          to="/"
-        >
-          <svg
-            viewBox="0 0 24 24"
-            aria-hidden="true"
-            focusable="false"
-            className="h-3.5 w-3.5"
-          >
-            <path
-              d="M3 10.5 12 3l9 7.5v9a1.5 1.5 0 0 1-1.5 1.5H14v-6h-4v6H4.5A1.5 1.5 0 0 1 3 19.5z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinejoin="round"
-            />
-          </svg>
-          Home
-        </Link>
+        
       </div>
 
       <div className="flex items-center gap-3 rounded-2xl border border-[#ff6da6]/20 bg-white/80 p-3">

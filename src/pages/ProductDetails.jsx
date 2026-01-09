@@ -525,9 +525,14 @@ const ProductDetails = () => {
                 </div>
 
                 {isSold ? (
-                  <p className="helper-text">
-                    This item has already been sold.
-                  </p>
+                  <div className="mt-4 rounded-2xl border border-[#ff6da6]/20 bg-[#fff1f7] p-4 text-sm text-[#6f3552]">
+                    <p className="text-sm font-semibold text-[#4b0f29]">
+                      Not available to buy
+                    </p>
+                    <p className="mt-1 text-xs text-[#7a3658]">
+                      This listing is sold out and no longer accepting orders.
+                    </p>
+                  </div>
                 ) : !user ? (
                   <Link
                     className="primary-btn button-link product-buy-btn"
@@ -568,38 +573,41 @@ const ProductDetails = () => {
                   </div>
                 </div>
 
-                <div className="detail-card">
-                  <h3 className="section-title">Attributes</h3>
-                  {product.attributes?.length ? (
-                    <div className="attribute-grid">
-                      {product.attributes.map((attr, index) => (
-                        <div
-                          key={`${attr.key}-${index}`}
-                          className="text-pink-800 flex bg-pink-200 h-6 p-2 rounded-lg items-center justify-between content-center text-sm"
-                        >
-                          <strong>{attr.key}:</strong> {attr.value}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="helper-text">
-                      No custom attributes provided.
-                    </p>
-                  )}
-                </div>
-
-                {product.tags?.length ? (
-                  <div className="detail-card">
-                    <h3 className="section-title">Tags</h3>
-                    <div className="attribute-grid">
-                      {product.tags.map((tag) => (
-                        <span key={tag} className="tag-pill">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                <div className="product-summary-stack">
+                  <div className="detail-card detail-card-compact">
+                    <h3 className="section-title">Attributes</h3>
+                    {product.attributes?.length ? (
+                      <div className="attribute-grid">
+                        {product.attributes.map((attr, index) => (
+                          <div
+                            key={`${attr.key}-${index}`}
+                            className="flex items-center gap-2 rounded-lg bg-pink-200 px-2 py-1 text-xs font-semibold text-pink-800"
+                          >
+                            <span>{attr.key}:</span>
+                            <span>{attr.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="helper-text">
+                        No custom attributes provided.
+                      </p>
+                    )}
                   </div>
-                ) : null}
+
+                  {product.tags?.length ? (
+                    <div className="detail-card">
+                      <h3 className="section-title">Tags</h3>
+                      <div className="attribute-grid">
+                        {product.tags.map((tag) => (
+                          <span key={tag} className="tag-pill">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
               </div>
             </div>
           </div>

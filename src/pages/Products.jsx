@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const categories = [
   { value: "all", label: "All" },
@@ -761,6 +762,7 @@ const Products = () => {
             )}
           </main>
         </div>
+        <Footer />
       </div>
     </div>
   );

@@ -26,6 +26,7 @@ const UserDashboard = () => {
   const isOverview =
     !isListings && !isOrders && !isProfile && !isComplaints;
   const apiBase = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+  const shouldLoadTransactions = isOrders || isOverview;
   const [orderNotifications, setOrderNotifications] = React.useState([]);
   const [orderUnreadCount, setOrderUnreadCount] = React.useState(0);
   const [notificationsLoading, setNotificationsLoading] = React.useState(false);
@@ -37,6 +38,13 @@ const UserDashboard = () => {
     totalGross: 0,
   });
   const [transactionsLoading, setTransactionsLoading] = React.useState(false);
+  const [listingSummary, setListingSummary] = React.useState({
+    total: 0,
+    pending: 0,
+    approved: 0
+  });
+  const [listingSummaryLoading, setListingSummaryLoading] =
+    React.useState(true);
   const [profileForm, setProfileForm] = React.useState({
     firstName: "",
     lastName: "",
@@ -91,7 +99,7 @@ const UserDashboard = () => {
   }, [apiBase, isOrders]);
 
   React.useEffect(() => {
-    if (!isOrders) {
+    if (!shouldLoadTransactions) {
       return;
     }
 
@@ -127,7 +135,51 @@ const UserDashboard = () => {
     };
 
     loadTransactions();
-  }, [apiBase, isOrders]);
+  }, [apiBase, shouldLoadTransactions]);
+
+  React.useEffect(() => {
+    if (!isOverview) {
+      return;
+    }
+
+    const loadListingSummary = async () => {
+      try {
+        setListingSummaryLoading(true);
+        const token = localStorage.getItem("remarket_token");
+        const response = await fetch(`${apiBase}/api/products/mine`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data?.error || "Failed to load listings");
+        }
+
+        const summary = (data.products || []).reduce(
+          (acc, product) => {
+            acc.total += 1;
+            if (product.status === "pending") {
+              acc.pending += 1;
+            }
+            if (product.status === "approved") {
+              acc.approved += 1;
+            }
+            return acc;
+          },
+          { total: 0, pending: 0, approved: 0 }
+        );
+
+        setListingSummary(summary);
+      } catch (error) {
+        console.error("Failed to load listing summary", error);
+      } finally {
+        setListingSummaryLoading(false);
+      }
+    };
+
+    loadListingSummary();
+  }, [apiBase, isOverview]);
 
   React.useEffect(() => {
     if (!user) {
@@ -449,12 +501,7 @@ const UserDashboard = () => {
                     {header.subtitle}
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <Link
-                      className="inline-flex items-center justify-center rounded-full border border-[#ff6da6]/25 bg-white/85 px-4 py-2 text-sm font-semibold text-[#a12d5d] shadow-[0_10px_18px_rgba(255,88,150,0.18)]"
-                      to="/"
-                    >
-                      Home
-                    </Link>
+                    
                     <Link
                       className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-[#ff4f9a] to-[#ff79c1] px-4 py-2 text-sm font-semibold text-white shadow-[0_14px_24px_rgba(255,79,154,0.35)]"
                       to="/dashboard/new"
@@ -464,13 +511,43 @@ const UserDashboard = () => {
                   </div>
                 </div>
 
+                <div className="mt-6 rounded-2xl border border-[#ff6da6]/20 bg-white/90 p-4 text-sm text-[#6f3552] shadow-[0_16px_32px_rgba(255,88,150,0.12)]">
+                  {listingSummaryLoading || transactionsLoading ? (
+                    <p>Building your summary snapshot...</p>
+                  ) : (
+                    <p>
+                      You have{" "}
+                      <span className="font-semibold text-[#4b0f29]">
+                        {listingSummary.total}
+                      </span>{" "}
+                      listings total, with{" "}
+                      <span className="font-semibold text-[#4b0f29]">
+                        {listingSummary.pending}
+                      </span>{" "}
+                      pending and{" "}
+                      <span className="font-semibold text-[#4b0f29]">
+                        {listingSummary.approved}
+                      </span>{" "}
+                      active. Orders placed:{" "}
+                      <span className="font-semibold text-[#4b0f29]">
+                        {transactionSummary.totalOrders}
+                      </span>
+                      . Gross sales:{" "}
+                      <span className="font-semibold text-[#4b0f29]">
+                        BDT {formatPrice(transactionSummary.totalGross)}
+                      </span>
+                      .
+                    </p>
+                  )}
+                </div>
+
                 <div className="mt-6 grid gap-4 md:grid-cols-3">
                   <div className="rounded-2xl border border-[#ff6da6]/20 bg-white/90 p-4 shadow-[0_16px_32px_rgba(255,88,150,0.14)]">
                     <p className="text-[11px] uppercase tracking-[0.2em] text-[#7a3658]">
                       Listings pending
                     </p>
                     <h2 className="mt-3 text-2xl font-semibold text-[#4b0f29]">
-                      --
+                      {listingSummaryLoading ? "--" : listingSummary.pending}
                     </h2>
                     <span className="text-sm text-[#7a3658]">
                       Waiting for approval
@@ -481,7 +558,7 @@ const UserDashboard = () => {
                       Active listings
                     </p>
                     <h2 className="mt-3 text-2xl font-semibold text-[#4b0f29]">
-                      --
+                      {listingSummaryLoading ? "--" : listingSummary.approved}
                     </h2>
                     <span className="text-sm text-[#7a3658]">
                       Visible to buyers
@@ -492,7 +569,7 @@ const UserDashboard = () => {
                       Orders placed
                     </p>
                     <h2 className="mt-3 text-2xl font-semibold text-[#4b0f29]">
-                      --
+                      {transactionsLoading ? "--" : transactionSummary.totalOrders}
                     </h2>
                     <span className="text-sm text-[#7a3658]">
                       Across all listings
