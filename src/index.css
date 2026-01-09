@@ -657,17 +657,17 @@
 
   .products-layout {
     display: grid;
-    grid-template-columns: 300px 1fr;
-    gap: 28px;
+    grid-template-columns: 270px 1fr;
+    gap: 24px;
     align-items: start;
   }
 
   .products-sidebar {
     background: rgba(255, 255, 255, 0.78);
     border-radius: 22px;
-    padding: 22px;
+    padding: 18px;
     display: grid;
-    gap: 16px;
+    gap: 14px;
     box-shadow: 0 24px 48px rgba(255, 88, 150, 0.18);
     border: 1px solid rgba(255, 109, 166, 0.2);
     position: sticky;
@@ -677,17 +677,19 @@
 
   .filter-header h2 {
     margin: 0;
-    font-size: 22px;
+    font-size: 20px;
     color: #4b0f29;
   }
 
   .filter-group {
     display: grid;
-    gap: 8px;
+    gap: 6px;
   }
 
   .products-sidebar input,
   .products-sidebar select {
+    padding: 10px 12px;
+    font-size: 14px;
     background: rgba(255, 255, 255, 0.9);
     border: 1px solid rgba(255, 109, 166, 0.2);
   }
