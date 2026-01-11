@@ -620,6 +620,8 @@ const Products = () => {
                       product.status === "sold" || product.quantity <= 0;
                     const ratingAverage = product.ratingAverage || 0;
                     const ratingCount = product.ratingCount || 0;
+                    const fallbackImage = "/placeholder-product.svg";
+                    const imageUrl = product.images?.[0]?.url || fallbackImage;
                     return (
                       <div key={product._id} className="product-card">
                       <div className="product-card-media">
@@ -646,17 +648,16 @@ const Products = () => {
                             />
                           </svg>
                         </button>
-                        {product.images?.[0]?.url ? (
-                          <img
-                            src={product.images[0].url}
-                            alt={product.title}
-                            className="product-image"
-                          />
-                        ) : (
-                          <div className="product-image product-image-placeholder">
-                            <span>{product.category?.[0] || "P"}</span>
-                          </div>
-                        )}
+                        <img
+                          src={imageUrl}
+                          alt={product.title || "Product image"}
+                          className="product-image"
+                          onError={(event) => {
+                            if (!event.currentTarget.src.includes(fallbackImage)) {
+                              event.currentTarget.src = fallbackImage;
+                            }
+                          }}
+                        />
                         <div className="product-card-overlay">
                           <span className="product-pill">{product.category}</span>
                           <span className="product-pill product-pill-outline">

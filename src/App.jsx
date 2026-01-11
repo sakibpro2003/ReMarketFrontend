@@ -23,6 +23,8 @@ import Products from "./pages/Products";
 import Register from "./pages/Register";
 import UserDashboard from "./pages/UserDashboard";
 import UserBlogs from "./pages/UserBlogs";
+import UserOrders from "./pages/UserOrders";
+import UserSales from "./pages/UserSales";
 import Wishlist from "./pages/Wishlist";
 
 const App = () => {
@@ -111,7 +113,19 @@ const App = () => {
             ) : isAdmin ? (
               <Navigate to="/admin" replace />
             ) : (
-              <UserDashboard />
+              <UserOrders />
+            )
+          }
+        />
+        <Route
+          path="/dashboard/sales"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <Navigate to="/admin" replace />
+            ) : (
+              <UserSales />
             )
           }
         />

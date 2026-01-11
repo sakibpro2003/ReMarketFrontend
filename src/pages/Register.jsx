@@ -1,10 +1,11 @@
 ﻿import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { authErrorMessage } from "../utils/authErrors";
 
 const Register = () => {
   const { register } = useAuth();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -47,6 +48,7 @@ const Register = () => {
         address: form.address,
         password: form.password
       });
+      navigate("/login", { replace: true });
     } catch (err) {
       setError(authErrorMessage(err));
     } finally {
@@ -55,8 +57,8 @@ const Register = () => {
   };
 
   return (
-    <div className="page bg-[#fff8fb]">
-      <div className="auth-shell overflow-hidden border border-[#ff6da6]/20 bg-white/90 shadow-[0_30px_60px_rgba(255,88,150,0.18)]">
+    <div className="page bg-[#fff8fb] register-page">
+      <div className="auth-shell auth-shell-compact overflow-hidden border border-[#ff6da6]/20 bg-white/90 shadow-[0_30px_60px_rgba(255,88,150,0.18)]">
         <div className="auth-left relative overflow-hidden bg-gradient-to-br from-[#fff2f8] via-[#ffe3ef] to-[#fff9fd]">
           <div className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-[#ff4f9a] to-[#ff79c1] text-sm font-semibold text-white shadow-[0_12px_22px_rgba(255,79,154,0.35)]">
@@ -72,10 +74,10 @@ const Register = () => {
             </div>
           </div>
           <div>
-            <span className="mt-6 inline-flex items-center rounded-full border border-[#ff6da6]/25 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a12d5d]">
+            <span className="mt-4 inline-flex items-center rounded-full border border-[#ff6da6]/25 bg-white/80 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a12d5d]">
               Create account
             </span>
-            <h1 className="mt-4 text-3xl font-semibold text-[#4b0f29]">
+            <h1 className="mt-3 text-2xl font-semibold text-[#4b0f29]">
               Launch your first listing today.
             </h1>
             <p className="mt-2 text-sm text-[#6f3552]">
@@ -83,12 +85,12 @@ const Register = () => {
               checkout flow.
             </p>
           </div>
-          <div className="grid gap-3">
-            <div className="rounded-2xl border border-[#ff6da6]/20 bg-white/85 p-4 shadow-[0_16px_32px_rgba(255,88,150,0.14)]">
+          <div className="grid gap-2">
+            <div className="rounded-2xl border border-[#ff6da6]/20 bg-white/85 p-3 shadow-[0_16px_32px_rgba(255,88,150,0.14)]">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[#7a3658]">
                 Start strong
               </p>
-              <div className="mt-3 grid gap-2 text-sm text-[#6f3552]">
+              <div className="mt-2 grid gap-2 text-sm text-[#6f3552]">
                 <div className="flex items-start gap-2">
                   <span className="mt-1 h-1.5 w-1.5 rounded-full bg-[#ff4f9a]" />
                   <span>Profiles help buyers trust your listings.</span>
@@ -118,15 +120,15 @@ const Register = () => {
         </div>
 
         <div className="auth-right bg-transparent">
-          <div className="w-full max-w-xl rounded-3xl border border-[#ff6da6]/20 bg-white/95 p-6 shadow-[0_20px_40px_rgba(255,88,150,0.14)]">
+          <div className="w-full max-w-xl rounded-3xl border border-[#ff6da6]/20 bg-white/95 p-5 shadow-[0_20px_40px_rgba(255,88,150,0.14)]">
             <div>
               <span className="inline-flex items-center rounded-full border border-[#ff6da6]/25 bg-[#fff1f7] px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-[#a12d5d]">
                 Get started
               </span>
-              <h1 className="mt-3 text-2xl font-semibold text-[#4b0f29]">
+              <h1 className="mt-2 text-xl font-semibold text-[#4b0f29]">
                 Create account
               </h1>
-              <p className="mt-2 text-sm text-[#6f3552]">
+              <p className="mt-1 text-sm text-[#6f3552]">
                 Fill in your details to start selling and buying.
               </p>
             </div>
@@ -137,7 +139,7 @@ const Register = () => {
               </div>
             ) : null}
 
-            <form className="grid gap-4" onSubmit={handleSubmit}>
+            <form className="grid gap-3" onSubmit={handleSubmit}>
               <div className="form-row">
                 <div>
                   <label htmlFor="firstName" className={labelClass}>
@@ -225,7 +227,7 @@ const Register = () => {
                 <textarea
                   id="address"
                   name="address"
-                  rows="3"
+                  rows="2"
                   value={form.address}
                   onChange={handleChange}
                   required
@@ -271,7 +273,7 @@ const Register = () => {
               </button>
             </form>
 
-            <div className="mt-2 flex items-center justify-between text-sm text-[#7a3658]">
+            <div className="mt-1 flex items-center justify-between text-sm text-[#7a3658]">
               <span>Already have an account?</span>
               <Link className="font-semibold text-[#a12d5d]" to="/login">
                 Sign in
@@ -285,3 +287,4 @@ const Register = () => {
 };
 
 export default Register;
+

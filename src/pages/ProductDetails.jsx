@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import { useAuth } from "../auth/AuthContext";
 import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
 
 const conditionLabels = {
   new: "New",
@@ -341,10 +342,10 @@ const ProductDetails = () => {
   if (loading) {
     return (
       <div className="page page-stack">
-        <div className="app-shell">
-          <div className="product-detail product-detail-compact product-detail-loading">
-            <div className="product-detail-loader">
-              <div className="skeleton-image product-detail-loader-media" />
+      <div className="app-shell">
+        <div className="product-detail product-detail-compact product-detail-loading">
+          <div className="product-detail-loader">
+            <div className="skeleton-image product-detail-loader-media" />
               <div className="product-detail-loader-info">
                 <span className="skeleton-line skeleton-title" />
                 <span className="skeleton-line skeleton-subtitle" />
@@ -354,28 +355,30 @@ const ProductDetails = () => {
                 </div>
                 <span className="skeleton-line skeleton-subtitle" />
                 <div className="skeleton-button" />
-              </div>
             </div>
           </div>
         </div>
+        <Footer />
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   if (!product) {
     return (
       <div className="page page-stack">
-        <div className="app-shell">
-          <div className="list-card">
-            <h3 className="list-card-title">Product not found</h3>
-            <Link className="secondary-btn button-link" to="/products">
-              Back to products
-            </Link>
-          </div>
+      <div className="app-shell">
+        <div className="list-card">
+          <h3 className="list-card-title">Product not found</h3>
+          <Link className="secondary-btn button-link" to="/products">
+            Back to products
+          </Link>
         </div>
+        <Footer />
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   const userId = user?.id || user?._id;
   const sellerId = product.seller?._id || product.seller;
@@ -527,7 +530,7 @@ const ProductDetails = () => {
                 {isSold ? (
                   <div className="mt-4 rounded-2xl border border-[#ff6da6]/20 bg-[#fff1f7] p-4 text-sm text-[#6f3552]">
                     <p className="text-sm font-semibold text-[#4b0f29]">
-                      Not available to buy
+                      This product is stocked out...
                     </p>
                     <p className="mt-1 text-xs text-[#7a3658]">
                       This listing is sold out and no longer accepting orders.
@@ -777,6 +780,7 @@ const ProductDetails = () => {
             </section>
           </div>
         </div>
+        <Footer />
       </div>
     </div>
   );

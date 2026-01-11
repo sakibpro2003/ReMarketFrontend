@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 
@@ -12,6 +12,66 @@ const linkClass = ({ isActive }) =>
 
 const UserSidebar = () => {
   const { user, logout } = useAuth();
+  const [orderUnreadCount, setOrderUnreadCount] = useState(0);
+  const apiBase = useMemo(
+    () => import.meta.env.VITE_API_BASE_URL || "http://localhost:5000",
+    []
+  );
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+    const token = localStorage.getItem("remarket_token");
+    if (!token) {
+      return;
+    }
+
+    const loadOrderNotifications = async () => {
+      try {
+        const response = await fetch(`${apiBase}/api/users/notifications`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (!response.ok) {
+          return;
+        }
+        const data = await response.json();
+        setOrderUnreadCount(data.unreadCount || 0);
+      } catch (error) {
+        console.error("Failed to load order notifications", error);
+      }
+    };
+
+    loadOrderNotifications();
+  }, [apiBase, user]);
+
+  const renderCount = (value) =>
+    value > 0 ? (
+      <span className="inline-flex min-w-[22px] items-center justify-center rounded-full bg-[#ff4f9a] px-2 py-0.5 text-[11px] font-semibold text-white shadow-[0_8px_14px_rgba(255,79,154,0.3)]">
+        {value > 99 ? "99+" : value}
+      </span>
+    ) : null;
+
+  const markOrdersRead = async () => {
+    const token = localStorage.getItem("remarket_token");
+    if (!token) {
+      setOrderUnreadCount(0);
+      return;
+    }
+    setOrderUnreadCount(0);
+    try {
+      await fetch(`${apiBase}/api/users/notifications/read`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+    } catch (error) {
+      console.error("Failed to mark order notifications read", error);
+    }
+  };
 
   return (
     <aside className="sticky top-5 grid w-full max-w-[260px] gap-5 rounded-[22px] border border-[#ff6da6]/20 bg-white/90 p-5 shadow-[0_22px_40px_rgba(255,88,150,0.18)] backdrop-blur">
@@ -64,8 +124,16 @@ const UserSidebar = () => {
         <NavLink className={linkClass} to="/dashboard/blogs">
           Blogs
         </NavLink>
-        <NavLink className={linkClass} to="/dashboard/orders">
-          Orders
+        <NavLink
+          className={linkClass}
+          to="/dashboard/orders"
+          onClick={markOrdersRead}
+        >
+          <span>Orders</span>
+          {renderCount(orderUnreadCount)}
+        </NavLink>
+        <NavLink className={linkClass} to="/dashboard/sales">
+          Sales
         </NavLink>
         <NavLink className={linkClass} to="/dashboard/complaints">
           Complaints

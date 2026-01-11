@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400" role="img" aria-label="No image available">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffe3ef" />
+      <stop offset="100%" stop-color="#fff9fd" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff4f9a" />
+      <stop offset="100%" stop-color="#ff79c1" />
+    </linearGradient>
+  </defs>
+  <rect width="600" height="400" rx="36" fill="url(#bg)" />
+  <rect x="36" y="36" width="528" height="328" rx="28" fill="rgba(255,255,255,0.55)" />
+  <g fill="none" stroke="url(#accent)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="170" y="110" width="260" height="180" rx="28" />
+    <circle cx="240" cy="185" r="22" />
+    <path d="M200 260l60-60 46 46 56-56 68 70" />
+  </g>
+  <text
+    x="300"
+    y="330"
+    text-anchor="middle"
+    font-family="Space Grotesk, Arial, sans-serif"
+    font-size="20"
+    letter-spacing="2"
+    fill="#a12d5d"
+  >
+    NO IMAGE
+  </text>
+</svg>

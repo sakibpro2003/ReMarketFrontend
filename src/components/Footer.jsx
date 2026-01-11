@@ -44,7 +44,7 @@ const Footer = () => (
       </div>
     </div>
     <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-[#ff6da6]/20 pt-4 text-xs text-[#7a3658]">
-      <span>Ac {new Date().getFullYear()} ReMarket. All rights reserved.</span>
+      <span>{new Date().getFullYear()} ReMarket. All rights reserved.</span>
       <div className="flex flex-wrap gap-3">
         <Link className="text-[#a12d5d]" to="/terms">
           Terms

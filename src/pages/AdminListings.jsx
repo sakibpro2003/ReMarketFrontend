@@ -5,6 +5,7 @@ import AdminSidebar from "../components/AdminSidebar";
 
 const statusOptions = [
   { value: "all", label: "All" },
+  { value: "public", label: "Live" },
   { value: "pending", label: "Pending" },
   { value: "approved", label: "Approved" },
   { value: "rejected", label: "Rejected" },
@@ -128,6 +129,13 @@ const AdminListings = () => {
   };
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const statusLabel =
+    statusOptions.find((option) => option.value === status)?.label || "All";
+  const queueTitle =
+    status === "all" ? "All listings queue" : `${statusLabel} queue`;
+  const showingStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const showingEnd = Math.min(total, page * pageSize);
+  const showingRange = total === 0 ? "0" : `${showingStart}-${showingEnd}`;
   const pageNumbers = (() => {
     const maxButtons = 5;
     const start = Math.max(1, page - Math.floor(maxButtons / 2));
@@ -155,38 +163,74 @@ const AdminListings = () => {
         <div className="dashboard-layout">
           <AdminSidebar />
 
-          <main className="content-area">
-            <div className="content-header">
-              <div>
-                <span className="badge">Listings</span>
-                <h1>Review listings</h1>
-                <p className="helper-text">
+          <main className="content-area admin-listings">
+            <section className="admin-listings-hero">
+              <div className="admin-listings-hero-copy">
+                <div className="admin-listings-kicker">
+                  <span className="badge">Listings</span>
+                  <span className="admin-listings-queue">{queueTitle}</span>
+                </div>
+                <h1 className="admin-listings-title">Review listings</h1>
+                <p className="admin-listings-subtitle">
                   Approve or reject submissions from sellers.
                 </p>
+                <div className="admin-listings-stats">
+                  <div className="admin-listings-stat">
+                    <span className="admin-listings-stat-label">Queue</span>
+                    <span className="admin-listings-stat-value">{statusLabel}</span>
+                  </div>
+                  <div className="admin-listings-stat">
+                    <span className="admin-listings-stat-label">Showing</span>
+                    <span className="admin-listings-stat-value">
+                      {showingRange}
+                    </span>
+                  </div>
+                  <div className="admin-listings-stat">
+                    <span className="admin-listings-stat-label">Total results</span>
+                    <span className="admin-listings-stat-value">{total}</span>
+                  </div>
+                </div>
               </div>
-              <div className="filter-row">
-                {statusOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    className={
-                      status === option.value
-                        ? "filter-btn filter-btn-active"
-                        : "filter-btn"
-                    }
-                    type="button"
-                    onClick={() => {
-                      setStatus(option.value);
-                      setPage(1);
-                    }}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+              <div className="admin-listings-hero-panel">
+                <div className="admin-listings-filter-card">
+                  <div className="admin-listings-filter-head">
+                    <h3 className="admin-listings-filter-title">Queue filters</h3>
+                    <p className="admin-listings-filter-subtitle">
+                      Page {page} of {totalPages}
+                    </p>
+                  </div>
+                  <div className="filter-row admin-listings-filter-row">
+                    {statusOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        className={
+                          status === option.value
+                            ? "filter-btn filter-btn-active"
+                            : "filter-btn"
+                        }
+                        type="button"
+                        onClick={() => {
+                          setStatus(option.value);
+                          setPage(1);
+                        }}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="admin-listings-tip">
+                  <span className="admin-listings-tip-label">Review tip</span>
+                  <p className="admin-listings-tip-text">
+                    Open a listing to verify images, pricing, and seller details
+                    before approval.
+                  </p>
+                </div>
               </div>
-            </div>
+            </section>
 
             {loading ? (
-              <div className="list-grid">
+              <div className="list-grid admin-listings-grid">
                 {loadingCards.map((index) => (
                   <div
                     key={`listing-skeleton-${index}`}
@@ -229,7 +273,7 @@ const AdminListings = () => {
               </div>
             ) : listings.length ? (
               <>
-                <div className="list-grid">
+                <div className="list-grid admin-listings-grid">
                   {listings.map((listing) => (
                   <div key={listing._id} className="list-card list-card-strong">
                     <div className="list-card-header">
@@ -288,7 +332,7 @@ const AdminListings = () => {
                     <div className="list-card-body">
                       <span className="list-price">BDT {formatPrice(listing.price)}</span>
                       <Link
-                        className="secondary-btn button-link"
+                        className="secondary-btn button-link admin-listings-view-btn"
                         to={`/admin/listings/${listing._id}`}
                       >
                         View details
@@ -298,7 +342,7 @@ const AdminListings = () => {
                   ))}
                 </div>
                 {totalPages > 1 ? (
-                  <div className="pagination">
+                  <div className="pagination pagination-market admin-listings-pagination">
                     <button
                       className="pagination-btn"
                       type="button"
@@ -340,7 +384,7 @@ const AdminListings = () => {
                 ) : null}
               </>
             ) : (
-              <div className="list-card">
+              <div className="list-card admin-listings-empty">
                 <h3 className="list-card-title">No listings found</h3>
                 <p className="helper-text">Try another status filter.</p>
               </div>

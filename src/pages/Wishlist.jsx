@@ -229,17 +229,16 @@ const Wishlist = () => {
                         />
                       </svg>
                     </button>
-                    {product.images?.[0]?.url ? (
-                      <img
-                        src={product.images[0].url}
-                        alt={product.title}
-                        className="product-image"
-                      />
-                    ) : (
-                      <div className="product-image product-image-placeholder">
-                        <span>{product.category?.[0] || "P"}</span>
-                      </div>
-                    )}
+                    <img
+                      src={product.images?.[0]?.url || "/placeholder-product.svg"}
+                      alt={product.title || "Product image"}
+                      className="product-image"
+                      onError={(event) => {
+                        if (!event.currentTarget.src.includes("/placeholder-product.svg")) {
+                          event.currentTarget.src = "/placeholder-product.svg";
+                        }
+                      }}
+                    />
                     <div className="product-info">
                       <div>
                         <h3>{product.title}</h3>

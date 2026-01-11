@@ -210,6 +210,7 @@ const MyListings = () => {
     "text-xs font-semibold uppercase tracking-[0.2em] text-[#7a3658]";
   const inputClass =
     "mt-2 w-full rounded-xl border border-[#ff6da6]/25 bg-white/90 px-3 py-2 text-sm text-[#4b0f29] focus:outline-none focus:ring-2 focus:ring-[#ff79c1]/40";
+  const fallbackImage = "/placeholder-product.svg";
 
   return (
     <div className="page page-stack">
@@ -341,9 +342,16 @@ const MyListings = () => {
                       >
                         <div className="flex flex-wrap items-start justify-between gap-4">
                           <div className="flex items-start gap-3">
-                            <div className="grid h-12 w-12 place-items-center rounded-xl border border-[#ff6da6]/20 bg-[#fff1f7] text-base font-semibold text-[#a12d5d]">
-                              {listing.title?.[0] || "L"}
-                            </div>
+                            <img
+                              src={listing.images?.[0]?.url || fallbackImage}
+                              alt={listing.title || "Listing image"}
+                              className="h-12 w-12 rounded-xl border border-[#ff6da6]/20 object-cover shadow-[0_10px_18px_rgba(255,88,150,0.16)]"
+                              onError={(event) => {
+                                if (!event.currentTarget.src.includes(fallbackImage)) {
+                                  event.currentTarget.src = fallbackImage;
+                                }
+                              }}
+                            />
                             <div>
                               <h3 className="text-lg font-semibold text-[#4b0f29]">
                                 {listing.title}

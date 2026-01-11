@@ -143,6 +143,13 @@ const AdminBlogs = () => {
   };
 
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const statusLabel =
+    statusOptions.find((option) => option.value === status)?.label || "All";
+  const queueTitle =
+    status === "all" ? "All blog submissions" : `${statusLabel} queue`;
+  const showingStart = total === 0 ? 0 : (page - 1) * pageSize + 1;
+  const showingEnd = Math.min(total, page * pageSize);
+  const showingRange = total === 0 ? "0" : `${showingStart}-${showingEnd}`;
   const pageNumbers = (() => {
     const maxButtons = 5;
     const start = Math.max(1, page - Math.floor(maxButtons / 2));
@@ -169,38 +176,71 @@ const AdminBlogs = () => {
         <div className="dashboard-layout">
           <AdminSidebar />
 
-          <main className="content-area">
-            <div className="content-header">
-              <div>
-                <span className="badge">Blogs</span>
-                <h1>Review blog submissions</h1>
-                <p className="helper-text">
+          <main className="content-area admin-blogs">
+            <section className="admin-blogs-hero">
+              <div className="admin-blogs-hero-copy">
+                <div className="admin-blogs-kicker">
+                  <span className="badge">Blogs</span>
+                  <span className="admin-blogs-queue">{queueTitle}</span>
+                </div>
+                <h1 className="admin-blogs-title">Review blog submissions</h1>
+                <p className="admin-blogs-subtitle">
                   Approve or reject community blog posts.
                 </p>
+                <div className="admin-blogs-stats">
+                  <div className="admin-blogs-stat">
+                    <span className="admin-blogs-stat-label">Queue</span>
+                    <span className="admin-blogs-stat-value">{statusLabel}</span>
+                  </div>
+                  <div className="admin-blogs-stat">
+                    <span className="admin-blogs-stat-label">Showing</span>
+                    <span className="admin-blogs-stat-value">{showingRange}</span>
+                  </div>
+                  <div className="admin-blogs-stat">
+                    <span className="admin-blogs-stat-label">Total results</span>
+                    <span className="admin-blogs-stat-value">{total}</span>
+                  </div>
+                </div>
               </div>
-              <div className="filter-row">
-                {statusOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    className={
-                      status === option.value
-                        ? "filter-btn filter-btn-active"
-                        : "filter-btn"
-                    }
-                    type="button"
-                    onClick={() => {
-                      setStatus(option.value);
-                      setPage(1);
-                    }}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+              <div className="admin-blogs-hero-panel">
+                <div className="admin-blogs-filter-card">
+                  <div className="admin-blogs-filter-head">
+                    <h3 className="admin-blogs-filter-title">Filter queue</h3>
+                    <p className="admin-blogs-filter-subtitle">
+                      Page {page} of {totalPages}
+                    </p>
+                  </div>
+                  <div className="filter-row admin-blogs-filter-row">
+                    {statusOptions.map((option) => (
+                      <button
+                        key={option.value}
+                        className={
+                          status === option.value
+                            ? "filter-btn filter-btn-active"
+                            : "filter-btn"
+                        }
+                        type="button"
+                        onClick={() => {
+                          setStatus(option.value);
+                          setPage(1);
+                        }}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="admin-blogs-tip">
+                  <span className="admin-blogs-tip-label">Moderation tip</span>
+                  <p className="admin-blogs-tip-text">
+                    Check tone, originality, and image usage before approving.
+                  </p>
+                </div>
               </div>
-            </div>
+            </section>
 
             {loading ? (
-              <div className="list-grid">
+              <div className="list-grid admin-blogs-grid">
                 {Array.from({ length: 4 }, (_, index) => (
                   <div
                     key={`blog-skeleton-${index}`}
@@ -233,7 +273,7 @@ const AdminBlogs = () => {
               </div>
             ) : blogs.length ? (
               <>
-                <div className="list-grid">
+                <div className="list-grid admin-blogs-grid">
                   {blogs.map((blog) => (
                     <div key={blog._id} className="list-card list-card-strong">
                       <div className="list-card-header">
@@ -305,7 +345,7 @@ const AdminBlogs = () => {
                   ))}
                 </div>
                 {totalPages > 1 ? (
-                  <div className="pagination">
+                  <div className="pagination pagination-market admin-blogs-pagination">
                     <button
                       className="pagination-btn"
                       type="button"
@@ -345,7 +385,7 @@ const AdminBlogs = () => {
                 ) : null}
               </>
             ) : (
-              <div className="list-card">
+              <div className="list-card admin-blogs-empty">
                 <h3 className="list-card-title">No blogs found</h3>
                 <p className="helper-text">Try another status filter.</p>
               </div>

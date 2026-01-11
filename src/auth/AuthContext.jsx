@@ -76,8 +76,6 @@ const AuthProvider = ({ children }) => {
       body: JSON.stringify(validPayload)
     });
 
-    setToken(data.token);
-    setUser(data.user);
     return data.user;
   };
 

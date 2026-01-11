@@ -14,6 +14,7 @@ const Home = () => {
   const [arrivalsLoading, setArrivalsLoading] = useState(true);
   const [latestBlogs, setLatestBlogs] = useState([]);
   const [blogsLoading, setBlogsLoading] = useState(true);
+  const fallbackImage = "/placeholder-product.svg";
   const categoryButtons = [
     {
       title: "Phones",
@@ -94,6 +95,12 @@ const Home = () => {
       location: "Barishal",
       image:
         "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80"
+    },
+    {
+      label: "Rangpur",
+      location: "Rangpur",
+      image:
+        "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80"
     }
   ];
   const testimonials = [
@@ -357,11 +364,11 @@ const Home = () => {
                 <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#7a3658]">
                   Popular locations
                 </p>
-                <div className="mt-3 grid grid-cols-6 gap-3">
+                <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
                   {locationButtons.map((item) => (
                     <Link
                       key={item.location}
-                      className="group relative inline-flex w-full items-center gap-3 overflow-hidden rounded-2xl border border-[#ff6da6]/25 px-4 py-4 text-sm font-semibold uppercase tracking-[0.12em] text-[#4b0f29] shadow-[0_14px_24px_rgba(255,88,150,0.16)] transition hover:-translate-y-0.5"
+                      className="group relative inline-flex w-full items-center gap-2 overflow-hidden rounded-2xl border border-[#ff6da6]/25 px-3 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-[#4b0f29] shadow-[0_14px_24px_rgba(255,88,150,0.16)] transition hover:-translate-y-0.5"
                       to={`/products?location=${encodeURIComponent(item.location)}`}
                     >
                       <div
@@ -370,12 +377,12 @@ const Home = () => {
                       />
                       <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/75 to-white/45" />
                       <div className="relative z-10 flex items-center gap-3">
-                        <span className="grid h-9 w-9 place-items-center rounded-full border border-[#ff6da6]/25 bg-white/80 text-[#a12d5d] shadow-[0_8px_14px_rgba(255,88,150,0.16)]">
+                        <span className="grid h-7 w-7 place-items-center rounded-full border border-[#ff6da6]/25 bg-white/80 text-[#a12d5d] shadow-[0_8px_14px_rgba(255,88,150,0.16)]">
                           <svg
                             viewBox="0 0 24 24"
                             aria-hidden="true"
                             focusable="false"
-                            className="h-4 w-4"
+                            className="h-3.5 w-3.5"
                           >
                             <path
                               d="M12 4.5c3.1 0 5.6 2.4 5.6 5.4 0 3.9-3.7 7.1-5.6 9-1.9-1.9-5.6-5.1-5.6-9 0-3 2.5-5.4 5.6-5.4z"
@@ -449,17 +456,16 @@ const Home = () => {
                       to={`/products/${item._id}`}
                     >
                       <div className="overflow-hidden rounded-2xl border border-[#ff6da6]/15 bg-[#fff1f7]">
-                        {item.images?.[0]?.url ? (
-                          <img
-                            src={item.images[0].url}
-                            alt={item.title}
-                            className="h-28 w-full object-cover"
-                          />
-                        ) : (
-                          <div className="grid h-28 place-items-center text-base font-semibold text-[#a12d5d]">
-                            {item.title?.[0] || "P"}
-                          </div>
-                        )}
+                        <img
+                          src={item.images?.[0]?.url || fallbackImage}
+                          alt={item.title || "Product image"}
+                          className="h-28 w-full object-cover"
+                          onError={(event) => {
+                            if (!event.currentTarget.src.includes(fallbackImage)) {
+                              event.currentTarget.src = fallbackImage;
+                            }
+                          }}
+                        />
                       </div>
                       <div className="mt-3 min-w-0">
                         <div className="flex items-start justify-between gap-2">
@@ -529,17 +535,16 @@ const Home = () => {
                       to={`/products/${item._id}`}
                     >
                       <div className="overflow-hidden rounded-2xl border border-[#ff6da6]/15 bg-[#fff1f7]">
-                        {item.images?.[0]?.url ? (
-                          <img
-                            src={item.images[0].url}
-                            alt={item.title}
-                            className="h-32 w-full object-cover"
-                          />
-                        ) : (
-                          <div className="grid h-32 place-items-center text-base font-semibold text-[#a12d5d]">
-                            {item.title?.[0] || "P"}
-                          </div>
-                        )}
+                        <img
+                          src={item.images?.[0]?.url || fallbackImage}
+                          alt={item.title || "Product image"}
+                          className="h-32 w-full object-cover"
+                          onError={(event) => {
+                            if (!event.currentTarget.src.includes(fallbackImage)) {
+                              event.currentTarget.src = fallbackImage;
+                            }
+                          }}
+                        />
                       </div>
                       <div className="mt-3">
                         <div className="flex items-start justify-between gap-2">
