@@ -1,4 +1,5 @@
-﻿import React, { useState } from "react";
+﻿import { useState } from "react";
+import { toast } from "react-toastify";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { authErrorMessage } from "../utils/authErrors";
@@ -6,11 +7,14 @@ import { authErrorMessage } from "../utils/authErrors";
 const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
+  const phonePrefix = "+8801";
+  const normalizePhoneSuffix = (value) =>
+    value.replace(/\D/g, "").slice(0, 9);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
     email: "",
-    phone: "",
+    phoneSuffix: "",
     gender: "",
     address: "",
     password: "",
@@ -25,6 +29,13 @@ const Register = () => {
 
   const handleChange = (event) => {
     const { name, value } = event.target;
+    if (name === "phoneSuffix") {
+      setForm((prev) => ({
+        ...prev,
+        phoneSuffix: normalizePhoneSuffix(value)
+      }));
+      return;
+    }
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -39,14 +50,18 @@ const Register = () => {
 
     setLoading(true);
     try {
+      const phone = `${phonePrefix}${form.phoneSuffix}`;
       await register({
         firstName: form.firstName,
         lastName: form.lastName,
         email: form.email,
-        phone: form.phone,
+        phone,
         gender: form.gender,
         address: form.address,
         password: form.password
+      });
+      toast.success("Account created. Please sign in.", {
+        toastId: "register-success"
       });
       navigate("/login", { replace: true });
     } catch (err) {
@@ -184,41 +199,47 @@ const Register = () => {
                   className={inputClass}
                 />
               </div>
-              <div className="form-row">
-                <div>
-                  <label htmlFor="phone" className={labelClass}>
-                    Phone
-                  </label>
+              <div>
+                <label htmlFor="phoneSuffix" className={labelClass}>
+                  Phone
+                </label>
+                <div className="mt-2 flex w-full overflow-hidden rounded-xl border border-[#ff6da6]/25 bg-white/90 text-sm text-[#4b0f29] shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] focus-within:ring-2 focus-within:ring-[#ff79c1]/40">
+                  <span className="flex items-center border-r border-[#ff6da6]/25 bg-[#fff1f7] px-3 text-xs font-semibold uppercase tracking-[0.2em] text-[#7a3658]">
+                    {phonePrefix}
+                  </span>
                   <input
-                    id="phone"
-                    name="phone"
+                    id="phoneSuffix"
+                    name="phoneSuffix"
                     type="tel"
-                    value={form.phone}
+                    inputMode="numeric"
+                    pattern="[3-9][0-9]{8}"
+                    maxLength={9}
+                    value={form.phoneSuffix}
                     onChange={handleChange}
                     required
-                    className={inputClass}
+                    className="w-full min-w-0 rounded-none border-0 bg-transparent px-3 py-2 text-sm text-[#4b0f29] placeholder:text-[#b77491] shadow-none focus:border-transparent focus:outline-none focus:ring-0 mt-0"
                   />
                 </div>
-                <div>
-                  <label htmlFor="gender" className={labelClass}>
-                    Gender
-                  </label>
-                  <select
-                    id="gender"
-                    name="gender"
-                    value={form.gender}
-                    onChange={handleChange}
-                    required
-                    className={inputClass}
-                  >
-                    <option value="" disabled>
-                      Select one
-                    </option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
+              </div>
+              <div>
+                <label htmlFor="gender" className={labelClass}>
+                  Gender
+                </label>
+                <select
+                  id="gender"
+                  name="gender"
+                  value={form.gender}
+                  onChange={handleChange}
+                  required
+                  className={inputClass}
+                >
+                  <option value="" disabled>
+                    Select one
+                  </option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
               </div>
               <div>
                 <label htmlFor="address" className={labelClass}>

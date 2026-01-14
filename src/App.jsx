@@ -10,6 +10,7 @@ import AdminHomeImages from "./pages/AdminHomeImages";
 import AdminListingDetails from "./pages/AdminListingDetails";
 import AdminListings from "./pages/AdminListings";
 import AdminOrphanListings from "./pages/AdminOrphanListings";
+import AdminUserPhones from "./pages/AdminUserPhones";
 import AdminUsers from "./pages/AdminUsers";
 import BlogDetails from "./pages/BlogDetails";
 import Blogs from "./pages/Blogs";
@@ -279,6 +280,18 @@ const App = () => {
               <Navigate to="/login" replace />
             ) : isAdmin ? (
               <AdminUsers />
+            ) : (
+              <Navigate to="/" replace />
+            )
+          }
+        />
+        <Route
+          path="/admin/phones"
+          element={
+            !user ? (
+              <Navigate to="/login" replace />
+            ) : isAdmin ? (
+              <AdminUserPhones />
             ) : (
               <Navigate to="/" replace />
             )

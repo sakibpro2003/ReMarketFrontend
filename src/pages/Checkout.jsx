@@ -16,6 +16,27 @@ const Checkout = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const phonePrefix = "+8801";
+  const normalizePhoneSuffix = (value) =>
+    value.replace(/\D/g, "").slice(0, 9);
+  const extractPhoneSuffix = (value) => {
+    if (!value) {
+      return "";
+    }
+    const trimmed = value.trim();
+    const match = trimmed.match(/^(?:\+?88)?01([3-9]\d{8})$/);
+    if (match) {
+      return match[1];
+    }
+    const digits = trimmed.replace(/\D/g, "");
+    if (digits.startsWith("8801") && digits.length >= 13) {
+      return digits.slice(4, 13);
+    }
+    if (digits.startsWith("01") && digits.length >= 11) {
+      return digits.slice(2, 11);
+    }
+    return "";
+  };
   const [product, setProduct] = useState(null);
   const [activeImage, setActiveImage] = useState("");
   const [loading, setLoading] = useState(true);
@@ -67,11 +88,15 @@ const Checkout = () => {
     if (!user) {
       return;
     }
-    setPurchaseForm((prev) => ({
-      ...prev,
-      phone: prev.phone || user.phone || "",
-      address: prev.address || user.address || "",
-    }));
+    setPurchaseForm((prev) => {
+      const nextPhone =
+        prev.phone || extractPhoneSuffix(user.phone);
+      return {
+        ...prev,
+        phone: nextPhone,
+        address: prev.address || user.address || "",
+      };
+    });
   }, [user]);
 
   useEffect(() => {
@@ -92,7 +117,9 @@ const Checkout = () => {
     new Intl.NumberFormat("en-BD").format(value || 0);
 
   const updatePurchaseField = (field, value) => {
-    setPurchaseForm((prev) => ({ ...prev, [field]: value }));
+    const nextValue =
+      field === "phone" ? normalizePhoneSuffix(value) : value;
+    setPurchaseForm((prev) => ({ ...prev, [field]: nextValue }));
   };
 
   const updateQuantity = (value) => {
@@ -170,7 +197,7 @@ const Checkout = () => {
         delivery: {
           name: deliveryName,
           email: deliveryEmail.trim(),
-          phone: purchaseForm.phone.trim(),
+          phone: `${phonePrefix}${purchaseForm.phone}`.trim(),
           address: purchaseForm.address.trim(),
         },
       };
@@ -332,15 +359,24 @@ const Checkout = () => {
                   <div className="form-row checkout-two-col">
                     <div className="form-section">
                       <label htmlFor="checkout-phone">Phone</label>
-                      <input
-                        id="checkout-phone"
-                        type="tel"
-                        value={purchaseForm.phone}
-                        onChange={(event) =>
-                          updatePurchaseField("phone", event.target.value)
-                        }
-                        required
-                      />
+                      <div className="mt-2 flex rounded-xl border border-slate-200 bg-white text-sm text-slate-700 focus-within:ring-2 focus-within:ring-[#ff79c1]/40">
+                        <span className="flex items-center rounded-l-xl border-r border-slate-200 bg-slate-50 px-3 text-xs font-semibold text-slate-600">
+                          {phonePrefix}
+                        </span>
+                        <input
+                          id="checkout-phone"
+                          type="tel"
+                          inputMode="numeric"
+                          pattern="[3-9][0-9]{8}"
+                          maxLength={9}
+                          value={purchaseForm.phone}
+                          onChange={(event) =>
+                            updatePurchaseField("phone", event.target.value)
+                          }
+                          required
+                          className="w-full rounded-r-xl bg-transparent px-3 py-2 text-sm text-slate-700 focus:outline-none"
+                        />
+                      </div>
                     </div>
                     <div className="form-section">
                       <label htmlFor="checkout-quantity">

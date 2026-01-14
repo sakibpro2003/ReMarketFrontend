@@ -90,6 +90,23 @@ const AdminBlogs = () => {
     loadBlogs();
   }, [apiBase, page, pageSize, status]);
 
+  const replaceBlog = (updatedBlog, options = {}) => {
+    const { removeIfStatusMismatch = false } = options;
+    setBlogs((prev) => {
+      const updated = prev.map((blog) =>
+        blog._id === updatedBlog._id ? updatedBlog : blog
+      );
+      if (
+        removeIfStatusMismatch &&
+        status !== "all" &&
+        updatedBlog.status !== status
+      ) {
+        return updated.filter((blog) => blog._id !== updatedBlog._id);
+      }
+      return updated;
+    });
+  };
+
   const updateBlogStatus = async (id, action) => {
     try {
       const token = localStorage.getItem("remarket_token");
@@ -103,15 +120,7 @@ const AdminBlogs = () => {
       if (!response.ok) {
         throw new Error(data?.error || "Failed to update blog");
       }
-      setBlogs((prev) => {
-        const updated = prev.map((blog) =>
-          blog._id === data.blog._id ? data.blog : blog
-        );
-        if (status !== "all" && data.blog.status !== status) {
-          return updated.filter((blog) => blog._id !== data.blog._id);
-        }
-        return updated;
-      });
+      replaceBlog(data.blog, { removeIfStatusMismatch: true });
       toast.success(
         action === "approve" ? "Blog approved." : "Blog rejected.",
         { toastId: `blog-${id}-${action}` }
@@ -119,6 +128,59 @@ const AdminBlogs = () => {
     } catch (error) {
       toast.error(error.message || "Failed to update blog", {
         toastId: `blog-${id}-error`
+      });
+    }
+  };
+
+  const updateBlogVisibility = async (id, action) => {
+    try {
+      const token = localStorage.getItem("remarket_token");
+      const response = await fetch(`${apiBase}/api/admin/blogs/${id}/${action}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "Failed to update blog visibility");
+      }
+      replaceBlog(data.blog);
+      toast.success(action === "hide" ? "Blog hidden." : "Blog visible.", {
+        toastId: `blog-${id}-${action}`
+      });
+    } catch (error) {
+      toast.error(error.message || "Failed to update blog visibility", {
+        toastId: `blog-${id}-visibility-error`
+      });
+    }
+  };
+
+  const deleteBlog = async (id) => {
+    const confirmDelete = window.confirm(
+      "Delete this blog permanently? This cannot be undone."
+    );
+    if (!confirmDelete) {
+      return;
+    }
+    try {
+      const token = localStorage.getItem("remarket_token");
+      const response = await fetch(`${apiBase}/api/admin/blogs/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "Failed to delete blog");
+      }
+      setBlogs((prev) => prev.filter((blog) => blog._id !== data.id));
+      setTotal((prev) => Math.max(prev - 1, 0));
+      toast.success("Blog deleted.", { toastId: `blog-${id}-deleted` });
+    } catch (error) {
+      toast.error(error.message || "Failed to delete blog", {
+        toastId: `blog-${id}-delete-error`
       });
     }
   };
@@ -302,9 +364,16 @@ const AdminBlogs = () => {
                             </p>
                           </div>
                         </div>
-                        <span className={`status-pill status-${blog.status}`}>
-                          {statusLabels[blog.status] || blog.status}
-                        </span>
+                        <div className="status-stack">
+                          <span className={`status-pill status-${blog.status}`}>
+                            {statusLabels[blog.status] || blog.status}
+                          </span>
+                          {blog.isHidden ? (
+                            <span className="status-pill status-hidden">
+                              Hidden
+                            </span>
+                          ) : null}
+                        </div>
                       </div>
                       <div className="list-card-meta">
                         <div className="list-card-meta-wide">
@@ -320,26 +389,53 @@ const AdminBlogs = () => {
                         <span className="text-xs text-[#7a3658]">
                           {blog.author?.email || "Author email unavailable"}
                         </span>
-                        {blog.status === "pending" ? (
-                          <div className="list-card-actions">
-                            <button
-                              className="secondary-btn"
-                              type="button"
-                              onClick={() => updateBlogStatus(blog._id, "approve")}
-                            >
-                              Approve
-                            </button>
-                            <button
-                              className="danger-btn"
-                              type="button"
-                              onClick={() => updateBlogStatus(blog._id, "reject")}
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        ) : (
-                          <span className="helper-text">No action required</span>
-                        )}
+                        <div className="list-card-actions">
+                          {blog.status === "pending" ? (
+                            <>
+                              <button
+                                className="secondary-btn"
+                                type="button"
+                                onClick={() =>
+                                  updateBlogStatus(blog._id, "approve")
+                                }
+                              >
+                                Approve
+                              </button>
+                              <button
+                                className="danger-btn"
+                                type="button"
+                                onClick={() =>
+                                  updateBlogStatus(blog._id, "reject")
+                                }
+                              >
+                                Reject
+                              </button>
+                            </>
+                          ) : (
+                            <span className="helper-text">
+                              No approval action required
+                            </span>
+                          )}
+                          <button
+                            className="secondary-btn"
+                            type="button"
+                            onClick={() =>
+                              updateBlogVisibility(
+                                blog._id,
+                                blog.isHidden ? "unhide" : "hide"
+                              )
+                            }
+                          >
+                            {blog.isHidden ? "Unhide" : "Hide"}
+                          </button>
+                          <button
+                            className="danger-btn"
+                            type="button"
+                            onClick={() => deleteBlog(blog._id)}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}

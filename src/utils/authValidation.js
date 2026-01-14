@@ -4,7 +4,13 @@ const registerSchema = z.object({
   firstName: z.string().trim().min(1, "First name is required"),
   lastName: z.string().trim().min(1, "Last name is required"),
   email: z.string().trim().email("Invalid email address"),
-  phone: z.string().trim().min(1, "Phone is required"),
+  phone: z
+    .string()
+    .trim()
+    .regex(
+      /^\+8801[3-9]\d{8}$/,
+      "Phone number must be a valid Bangladeshi mobile number"
+    ),
   gender: z.enum(["male", "female", "other"], {
     required_error: "Gender is required",
     invalid_type_error: "Gender is required"
