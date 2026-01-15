@@ -48,16 +48,8 @@ const App = () => {
       <Routes>
       <Route
         path="/"
-        element={
-          !user ? (
-            <Navigate to="/login" replace />
-            ) : isAdmin ? (
-              <Navigate to="/admin" replace />
-            ) : (
-              <Home />
-            )
-          }
-        />
+        element={isAdmin ? <Navigate to="/admin" replace /> : <Home />}
+      />
         <Route
           path="/dashboard"
           element={
@@ -239,10 +231,19 @@ const App = () => {
           }
         />
         <Route path="/products" element={<Products />} />
-        <Route path="/products/:id" element={<ProductDetails />} />
+        <Route
+          path="/products/:id"
+          element={!user ? <Navigate to="/login" replace /> : <ProductDetails />}
+        />
         <Route path="/blogs" element={<Blogs />} />
-        <Route path="/blogs/:id" element={<BlogDetails />} />
-        <Route path="/checkout/:id" element={<Checkout />} />
+        <Route
+          path="/blogs/:id"
+          element={!user ? <Navigate to="/login" replace /> : <BlogDetails />}
+        />
+        <Route
+          path="/checkout/:id"
+          element={!user ? <Navigate to="/login" replace /> : <Checkout />}
+        />
         <Route
           path="/wishlist"
           element={

@@ -429,7 +429,7 @@ const Products = () => {
 
         <section className="market-hero">
           <div>
-            <span className="market-hero-badge">Pink luxe market</span>
+            {/* <span className="market-hero-badge">Pink luxe market</span> */}
             <h1 className="market-hero-title">
               Discover pre-loved pieces with a premium glow.
             </h1>
@@ -696,9 +696,9 @@ const Products = () => {
                           <span className="product-stock">
                             {isSold ? "Sold out" : `${product.quantity} left`}
                           </span>
-                          {product.negotiable ? (
+                          {/* {product.negotiable ? (
                             <span className="product-chip">Negotiable</span>
-                          ) : null}
+                          ) : null} */}
                         </div>
                         <div className="product-actions">
                           <Link

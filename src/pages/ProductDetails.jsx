@@ -438,9 +438,9 @@ const ProductDetails = () => {
                       : "No reviews"}
                   </span>
                 </span>
-                <span className="product-detail-chip">
+                {/* <span className="product-detail-chip">
                   {product.negotiable ? "Negotiable" : "Fixed price"}
-                </span>
+                </span> */}
               </div>
             </div>
             <div className="product-detail-actions">
