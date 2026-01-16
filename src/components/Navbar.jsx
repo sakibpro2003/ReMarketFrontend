@@ -46,24 +46,40 @@ const Navbar = () => {
         </div>
       </div>
       <div className="nav-right">
-        <div className="nav-user">
-          <div className="avatar avatar-xs">
-            {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt={`${user.firstName} ${user.lastName}`} />
-            ) : (
-              <span>{initials}</span>
-            )}
-          </div>
-          <div className="nav-user-meta">
-            <span className="nav-user-name">
-              {user ? `${user.firstName} ${user.lastName}` : ""}
-            </span>
-            <span className="nav-user-email">{user?.email}</span>
-          </div>
-        </div>
-        <button className="secondary-btn" type="button" onClick={logout}>
-          Sign out
-        </button>
+        {user ? (
+          <>
+            <div className="nav-user">
+              <div className="avatar avatar-xs">
+                {user?.avatarUrl ? (
+                  <img
+                    src={user.avatarUrl}
+                    alt={`${user.firstName} ${user.lastName}`}
+                  />
+                ) : (
+                  <span>{initials}</span>
+                )}
+              </div>
+              <div className="nav-user-meta">
+                <span className="nav-user-name">
+                  {user ? `${user.firstName} ${user.lastName}` : ""}
+                </span>
+                <span className="nav-user-email">{user?.email}</span>
+              </div>
+            </div>
+            <button className="secondary-btn" type="button" onClick={logout}>
+              Sign out
+            </button>
+          </>
+        ) : (
+          <>
+            <NavLink className="secondary-btn" to="/login" onClick={closeMenu}>
+              Sign in
+            </NavLink>
+            <NavLink className="primary-btn" to="/register" onClick={closeMenu}>
+              Create account
+            </NavLink>
+          </>
+        )}
         <button
           className="nav-toggle"
           type="button"
@@ -88,21 +104,26 @@ const Navbar = () => {
         id="nav-drawer"
         className={`nav-drawer ${menuOpen ? "nav-drawer-open" : ""}`}
       >
-        <div className="nav-drawer-user">
-          <div className="avatar avatar-sm">
-            {user?.avatarUrl ? (
-              <img src={user.avatarUrl} alt={`${user.firstName} ${user.lastName}`} />
-            ) : (
-              <span>{initials}</span>
-            )}
-          </div>
-          <div>
-            <div className="nav-user-name">
-              {user ? `${user.firstName} ${user.lastName}` : ""}
+        {user ? (
+          <div className="nav-drawer-user">
+            <div className="avatar avatar-sm">
+              {user?.avatarUrl ? (
+                <img
+                  src={user.avatarUrl}
+                  alt={`${user.firstName} ${user.lastName}`}
+                />
+              ) : (
+                <span>{initials}</span>
+              )}
             </div>
-            <div className="nav-user-email">{user?.email}</div>
+            <div>
+              <div className="nav-user-name">
+                {user ? `${user.firstName} ${user.lastName}` : ""}
+              </div>
+              <div className="nav-user-email">{user?.email}</div>
+            </div>
           </div>
-        </div>
+        ) : null}
         <div className="nav-drawer-links">
           {navItems.map((item) => (
             <NavLink
@@ -118,9 +139,28 @@ const Navbar = () => {
             </NavLink>
           ))}
         </div>
-        <button className="secondary-btn nav-drawer-btn" type="button" onClick={logout}>
-          Sign out
-        </button>
+        {user ? (
+          <button className="secondary-btn nav-drawer-btn" type="button" onClick={logout}>
+            Sign out
+          </button>
+        ) : (
+          <>
+            <NavLink
+              className="secondary-btn nav-drawer-btn"
+              to="/login"
+              onClick={closeMenu}
+            >
+              Sign in
+            </NavLink>
+            <NavLink
+              className="primary-btn nav-drawer-btn"
+              to="/register"
+              onClick={closeMenu}
+            >
+              Create account
+            </NavLink>
+          </>
+        )}
       </div>
     </nav>
   );

@@ -128,9 +128,9 @@ const AdminSidebar = () => {
           <NavLink className={linkClass} to="/admin/users">
             Users
           </NavLink>
-          <NavLink className={linkClass} to="/admin/phones">
+          {/* <NavLink className={linkClass} to="/admin/phones">
             User phones
-          </NavLink>
+          </NavLink> */}
         </nav>
       </div>
 
